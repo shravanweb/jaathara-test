@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ArrowRight, CalendarDays, ChefHat, Clock3, Instagram,
+  ArrowRight, CalendarDays, ChefHat, Clock3, Instagram, Mail,
   MapPin, Menu as MenuIcon, Phone, ShoppingBag, Utensils, X, Leaf,
-  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed
+  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun.png';
-import heroMain from './assets/hero-main.jpg';
+import heroMain from './assets/hero-main-cut.webp';
 import satTandoori from './assets/sat-tandoori.jpg';
 import OrderModal from './components/OrderModal';
 import OrderChatWidget from './components/OrderChatWidget';
 import ReserveModal from './components/ReserveModal';
 import { useRestaurantMenu } from './hooks/useRestaurantMenu';
+import clipBalloon from './assets/Cliparts/balloonseller.webp';
+import clipDappu from './assets/Cliparts/dappumusicians.webp';
+import clipWheel from './assets/Cliparts/giantwheel-animated.svg';
+import clipKolatam from './assets/Cliparts/kolatam-dancers.webp';
+import clipMerry from './assets/Cliparts/03-merry-go-round.png';
+import clipSugarcane from './assets/Cliparts/12-sugarcane-cart.png';
 
 const food = {
   biryani: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=1400&q=80',
@@ -55,6 +61,26 @@ const FALLBACK_DISHES = [
   { category: 'Desserts', name: 'Double ka Meetha', desc: 'Hyderabadi bread pudding, rich with saffron.', veg: true, priceValue: 120, image: food.dessert }
 ];
 
+const cateringServices = [
+  { icon: Building2, title: 'Corporate Catering', text: 'Office lunches, team meetings and client events, delivered hot and on time.' },
+  { icon: HeartHandshake, title: 'Weddings & Sangeet', text: 'Full Telangana feasts for haldi, mehendi, sangeet and the big day.' },
+  { icon: Cake, title: 'Birthdays & Parties', text: 'Family gatherings and milestone parties with crowd-favourite menus.' },
+  { icon: Users, title: 'Community Gatherings', text: 'Big-batch biryani and party trays for associations, temples and get-togethers.' }
+];
+
+const cateringSteps = [
+  { title: 'Share your date', text: 'Tell us the occasion, guest count and venue.' },
+  { title: 'Pick your menu', text: 'Choose from our dishes or let us build a custom feast.' },
+  { title: 'We cook & serve', text: 'Fresh food, trays or full service, set up on time.' }
+];
+
+const events = [
+  { icon: PartyPopper, tag: 'Festivals', title: 'Festival Nights', text: 'Special menus and celebrations for Diwali, Sankranti, Ugadi, Bathukamma and Dasara.', image: food.thali },
+  { icon: Flame, tag: 'Live kitchen', title: 'Live Tandoor Evenings', text: 'Kebabs, naan and tikkas fresh off the coals, cooked right in front of you.', image: food.tandoori },
+  { icon: Music, tag: 'Private hire', title: 'Private Dining & Parties', text: 'Book our hall for birthdays, anniversaries, team dinners and family functions.', image: food.diningRoom }
+];
+
+
 const feastItems = [
   'Hyderabadi dum biryani',
   'Gongura and slow gravies',
@@ -66,6 +92,33 @@ const feastItems = [
 const reviews = [
   { initials: 'RK', name: 'Ramesh K.', text: 'The muggulu at the door and the biryani on the table — it felt like walking into a Telangana jathara.' },
   { initials: 'PM', name: 'Priya M.', text: 'Loved the gongura and the tandoori starters. Service was warm, portions generous, colours everywhere.' }
+];
+
+const heroSlides = [
+  {
+    src: heroMain,
+    alt: 'Hyderabadi dum biryani in a copper kadai, with chicken, saffron rice and a copper bowl of salan',
+    name: 'Hyderabadi Dum Biryani',
+    position: '68% 46%'
+  },
+  {
+    src: food.curryPots,
+    alt: 'Copper bowls of slow-cooked curry',
+    name: 'Gongura Mamsam',
+    position: '58% 48%'
+  },
+  {
+    src: food.thali,
+    alt: 'A festival thali of rice, curries and breads',
+    name: 'Festival Thali',
+    position: '52% 46%'
+  },
+  {
+    src: gulabJamun,
+    alt: 'Gulab jamun in syrup with almond flakes',
+    name: 'Gulab Jamun',
+    position: '50% 44%'
+  }
 ];
 
 const features = [
@@ -181,6 +234,47 @@ function Mandala({ className = '' }) {
           const y = 100 + Math.sin(a) * 58;
           return <circle key={`d${i}`} cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.2" fill="currentColor" stroke="none" />;
         })}
+      </g>
+    </svg>
+  );
+}
+
+function LotusMandala({ className = '' }) {
+  const P = (r, a) => [100 + Math.cos(a) * r, 100 + Math.sin(a) * r].map((n) => n.toFixed(2)).join(' ');
+  const petals = (n, r1, r2, spread, bulge, offset = 0) =>
+    Array.from({ length: n }).map((_, i) => {
+      const a = (i * 2 * Math.PI) / n + offset;
+      const s = (Math.PI / n) * spread;
+      return `M ${P(r1, a - s)} Q ${P(r2 * bulge, a - s * 0.9)} ${P(r2, a)} Q ${P(r2 * bulge, a + s * 0.9)} ${P(r1, a + s)}`;
+    }).join(' ');
+  const dots = (n, r, offset = 0) =>
+    Array.from({ length: n }).map((_, i) => {
+      const a = (i * 2 * Math.PI) / n + offset;
+      return <circle key={`${r}-${i}`} cx={(100 + Math.cos(a) * r).toFixed(2)} cy={(100 + Math.sin(a) * r).toFixed(2)} r={r > 80 ? 1.1 : 1.4} />;
+    });
+  const step = Math.PI / 24;
+  return (
+    <svg className={`lotus-mandala ${className}`} viewBox="0 0 200 200" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeLinejoin="round">
+        <path d={petals(24, 78, 98, 0.9, 0.86, step)} strokeWidth="0.7" />
+        <path d={petals(24, 78, 92, 0.55, 0.9, step)} strokeWidth="0.45" />
+        <path d={petals(16, 58, 82, 0.92, 0.82)} strokeWidth="0.8" fill="currentColor" fillOpacity="0.06" />
+        <path d={petals(16, 60, 76, 0.55, 0.88)} strokeWidth="0.45" />
+        <circle cx="100" cy="100" r="58" strokeWidth="0.7" />
+        <circle cx="100" cy="100" r="55" strokeWidth="0.35" strokeDasharray="1.2 1.6" />
+        <path d={petals(12, 34, 54, 0.95, 0.8, Math.PI / 12)} strokeWidth="0.8" fill="currentColor" fillOpacity="0.08" />
+        <path d={petals(12, 36, 48, 0.5, 0.85, Math.PI / 12)} strokeWidth="0.4" />
+        <circle cx="100" cy="100" r="34" strokeWidth="0.7" />
+        <path d={petals(8, 16, 32, 0.9, 0.8)} strokeWidth="0.75" fill="currentColor" fillOpacity="0.1" />
+        <circle cx="100" cy="100" r="15" strokeWidth="0.7" />
+        <circle cx="100" cy="100" r="9" strokeWidth="0.5" strokeDasharray="1 1.4" />
+        <circle cx="100" cy="100" r="3.2" fill="currentColor" stroke="none" />
+      </g>
+      <g fill="currentColor">
+        {dots(48, 99.2)}
+        {dots(24, 86, step)}
+        {dots(16, 62, Math.PI / 16)}
+        {dots(12, 40)}
       </g>
     </svg>
   );
@@ -509,6 +603,13 @@ function App() {
     error: menuError,
     isLive: menuLive,
   } = useRestaurantMenu(FALLBACK_DISHES);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const specialCards = React.useMemo(() => {
+    if (specials.length >= 8) return specials;
+    const ranked = [...dishes].filter((d) => d.available !== false).sort((a, b) => Number(b.ordersCount || 0) - Number(a.ordersCount || 0));
+    const withImage = ranked.filter((d) => d.image);
+    return (withImage.length >= 5 ? withImage : ranked).slice(0, 8).map((d) => ({ name: d.name, note: d.desc || d.description || '', image: d.image, veg: d.veg, priceValue: d.priceValue }));
+  }, [specials, dishes]);
   useReveal();
 
   const navItems = [
@@ -517,8 +618,18 @@ function App() {
     { label: 'About Us', id: 'about' },
     { label: 'Gallery', id: 'gallery' },
     { label: 'Catering', id: 'catering' },
+    { label: 'Events', id: 'events' },
     { label: 'Contact', id: 'contact' }
   ];
+
+  useEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return undefined;
+    const id = window.setInterval(() => {
+      setHeroIndex((index) => (index + 1) % heroSlides.length);
+    }, 4800);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const onKey = (event) => {
@@ -556,8 +667,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const map = { feast: 'menu', specials: 'menu', specialties: 'menu', reserve: 'contact', celebrate: 'catering' };
-    const ids = ['home', 'about', 'specialties', 'celebrate', 'gallery', 'feast', 'menu', 'specials', 'reserve', 'contact'];
+    const map = { feast: 'menu', specials: 'menu', specialties: 'menu', reserve: 'contact' };
+    const ids = ['home', 'specialties', 'celebrate', 'gallery', 'about', 'feast', 'menu', 'specials', 'catering', 'events', 'reserve', 'contact'];
     const onScroll = () => {
       const y = window.scrollY + 130;
       let current = 'home';
@@ -617,7 +728,7 @@ function App() {
             <button type="button" onClick={() => goTo('catering')}>Events</button>
           </div>
           <div className="top-meta">
-            <span><MapPin size={12} /> ECIL, Hyderabad</span>
+            <span><MapPin size={12} /> Sandy, Utah</span>
             <span><Clock3 size={12} /> 11:00 AM – 11:00 PM</span>
             <span className="top-social">
               <a href="#contact" aria-label="Instagram"><Instagram size={13} /></a>
@@ -663,7 +774,7 @@ function App() {
             </button>
           </nav>
           <div className="nav-actions">
-            <a className="nav-phone" href="tel:+919876543210"><Phone size={15} /> +91 98765 43210</a>
+            <a className="nav-phone" href="tel:+13856148117"><Phone size={15} /> +1 (385) 614-8117</a>
             <button
               className="order-btn"
               onClick={openOrder}
@@ -686,7 +797,31 @@ function App() {
 
       <main>
         <section className="hero" id="home">
+          <LotusMandala className="hero-mandala hero-mandala-top" />
+          <LotusMandala className="hero-mandala hero-mandala-bottom" />
           <div className="hero-grain" aria-hidden="true" />
+          <div className="hero-photo" data-hero-photo="a">
+            <div className="hero-photo-inner">
+              {heroSlides.map((slide, index) => (
+                <img
+                  key={slide.name}
+                  src={slide.src}
+                  alt={index === heroIndex ? slide.alt : ''}
+                  aria-hidden={index === heroIndex ? undefined : true}
+                  className={index === heroIndex ? 'is-active' : undefined}
+                  style={{ objectPosition: slide.position }}
+                  width="1400"
+                  height="933"
+                />
+              ))}
+            </div>
+            <div className="hero-photo-fade" aria-hidden="true" />
+            <div className="hero-photo-glow" aria-hidden="true" />
+            <div className="hero-photo-tag">
+              <span>Signature</span>
+              <strong key={heroSlides[heroIndex].name}>{heroSlides[heroIndex].name}</strong>
+            </div>
+          </div>
           <MarigoldPetals />
           <TempleBorder position="top" />
           <div className="container hero-grid">
@@ -696,7 +831,7 @@ function App() {
               <div className="hero-subtitle">Indian Cuisine</div>
               <p className="hero-tagline">A Feast of Authentic Indian Flavors</p>
               <p className="hero-lead">
-                From the colours of a temple fair — pasupu, kumkuma and muggulu — to dum biryani at your table in ECIL, Hyderabad.
+                From the colours of a temple fair — pasupu, kumkuma and muggulu — to dum biryani at your table in Sandy, Utah.
               </p>
               <LotusRule light />
               <div className="hero-buttons">
@@ -708,40 +843,12 @@ function App() {
                 </button>
               </div>
               <div className="hero-trust">
-                <span><MapPin size={13} /> ECIL, Hyderabad</span>
+                <span><MapPin size={13} /> Sandy, Utah</span>
                 <span className="dot" />
                 <span><Clock3 size={13} /> Open 11:00 AM – 11:00 PM, daily</span>
               </div>
             </div>
-            <div className="hero-visual">
-              <div className="hero-stage">
-                <div className="hero-cluster">
-                  <figure className="hero-side">
-                    <span className="hero-side-outline" aria-hidden="true" />
-                    <img src={satTandoori} alt="Tandoori kebabs from the grill" width="800" height="800" />
-                  </figure>
-                  <div className="hero-frame">
-                    <span className="hero-outline" aria-hidden="true" />
-                    <div className="hero-dish">
-                      <img
-                        src={heroMain}
-                        alt="Hyderabadi dum biryani in a copper kadai, with chicken, saffron rice and a copper bowl of salan"
-                        width="2000"
-                        height="2000"
-                      />
-                      <div className="hero-steam" aria-hidden="true"><i /><i /><i /></div>
-                    </div>
-                  </div>
-                  <div className="hero-info-card">
-                    <span>Signature</span>
-                    <strong>Hyderabadi Dum Biryani</strong>
-                    <i className="hero-card-line" aria-hidden="true" />
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-          <TempleBorder position="bottom" />
           <div className="container hero-pills-wrap">
             <div className="feature-pills" data-reveal>
               {features.map((item) => {
@@ -758,10 +865,8 @@ function App() {
         </section>
 
         <section className="specialties section-pad" id="specialties">
-          <Mandala className="ornament mandala-tr faint" />
-          <Palms className="ornament palms-right faint" />
           <div className="container">
-            <SectionHeading title="Explore Our Specialties" />
+            <SectionHeading eyebrow="From our jathara kitchen" title="Explore Our Specialties" />
             <div className="specialty-grid">
               {specialties.map((item, i) => (
                 <button
@@ -777,6 +882,7 @@ function App() {
                   </div>
                   <div className="specialty-label">
                     <h3>{item.name}</h3>
+                    <span className="specialty-link">View dishes <ArrowRight size={14} /></span>
                   </div>
                 </button>
               ))}
@@ -784,9 +890,9 @@ function App() {
           </div>
         </section>
 
-        <section className="celebrate" id="catering">
-          <Mandala className="ornament mandala-bl gold" />
-          <Mandala className="ornament mandala-br gold" />
+        <section className="celebrate" id="celebrate">
+          <LotusMandala className="celebrate-mandala celebrate-mandala-left" />
+          <LotusMandala className="celebrate-mandala celebrate-mandala-right" />
           <div className="celebrate-leaves" aria-hidden="true" />
           <div className="container celebrate-inner">
             <div className="celebrate-copy" data-reveal>
@@ -808,31 +914,28 @@ function App() {
         </section>
 
         <section className="gallery section-pad" id="gallery">
-          <Palms className="ornament palms-left faint" />
+          <img src={clipMerry} alt="" aria-hidden="true" className="gallery-clip gallery-clip-tl" />
+          <img src={clipSugarcane} alt="" aria-hidden="true" className="gallery-clip gallery-clip-br" />
           <div className="container">
-            <SectionHeading title="Our Gallery" />
-            <div className="gallery-row" data-reveal>
-              <figure><img src={food.diningWarm} alt="Warm evening dining room" /><figcaption>An evening at the feast</figcaption></figure>
-              <figure><img src={food.diningServe} alt="Service in the dining room" /><figcaption>At the table</figcaption></figure>
-              <figure><img src={food.diningRoom} alt="Restaurant dining room" /><figcaption>A seat at Jaathara</figcaption></figure>
-              <figure><img src={food.restaurant} alt="Jaathara dining room" /><figcaption>The hall</figcaption></figure>
-            </div>
-            <div className="gallery-row food-row" data-reveal>
-              <figure><img src={food.biryani} alt="Hyderabadi dum biryani" /><figcaption>Dum biryani</figcaption></figure>
-              <figure><img src={food.tandoori} alt="Tandoori kebabs on the grill" /><figcaption>From the coals</figcaption></figure>
-              <figure><img src={food.thali} alt="Festival thali with roti and curries" /><figcaption>The festival feast</figcaption></figure>
-              <figure><img src={food.samosa} alt="Golden samosas with chutney" /><figcaption>Festival snacks</figcaption></figure>
+            <SectionHeading eyebrow="Moments from the jathara" title="Our Gallery" />
+            <div className="gallery-mosaic" data-reveal>
+              <figure className="g-a"><img src={food.biryani} alt="Hyderabadi dum biryani" loading="lazy" /><figcaption><small>Chef's Pride</small>The Royal Biryani Handi</figcaption></figure>
+              <figure className="g-b"><img src={food.diningServe} alt="Service in the dining room" loading="lazy" /><figcaption><small>Interiors</small>Heritage Corner</figcaption></figure>
+              <figure className="g-c"><img src={food.samosa} alt="Golden samosas with chutney" loading="lazy" /><figcaption><small>Starters</small>Festival Snacks</figcaption></figure>
+              <figure className="g-d"><img src={food.diningWarm} alt="Warm evening dining room" loading="lazy" /><figcaption><small>Ambience</small>An Evening at the Feast</figcaption></figure>
+              <figure className="g-e"><img src={food.tandoori} alt="Tandoori kebabs on the grill" loading="lazy" /><figcaption><small>Tandoor</small>From the Coals</figcaption></figure>
+              <figure className="g-f"><img src={food.diningRoom} alt="Restaurant dining room" loading="lazy" /><figcaption><small>Dine-in</small>A Seat at Jaathara</figcaption></figure>
+              <figure className="g-g"><img src={food.thali} alt="Festival thali with roti and curries" loading="lazy" /><figcaption><small>Thali</small>The Festival Feast</figcaption></figure>
+              <figure className="g-h"><img src={food.restaurant} alt="Jaathara dining room" loading="lazy" /><figcaption><small>Our Space</small>The Hall</figcaption></figure>
             </div>
           </div>
         </section>
-
         <section className="about section-pad" id="about">
           <Charminar className="ornament charminar-about" />
-          <Mandala className="ornament mandala-br faint" />
           <div className="container about-grid">
             <div className="about-photo" data-reveal>
               <img src={food.restaurant} alt="Jaathara dining room" />
-              <span className="photo-tag">ECIL · Hyderabad</span>
+              <span className="photo-tag">Sandy · Utah</span>
             </div>
             <div className="about-copy" data-reveal="right">
               <span className="eyebrow">Our story</span>
@@ -882,6 +985,7 @@ function App() {
         </section>
 
         <section className="menu-section section-pad" id="menu">
+          <img className="clip clip-tr" src={clipBalloon} alt="" aria-hidden="true" loading="lazy" />
           <Mandala className="ornament mandala-tl faint" />
           <div className="container">
             <SectionHeading eyebrow="From the jathara kitchen" title="Explore Our Menu" />
@@ -913,7 +1017,7 @@ function App() {
                       <h3>{dish.name}</h3>
                       <span className="dish-rule" aria-hidden="true" />
                       <span className="dish-price">
-                        <span className="price-value">₹ {dish.priceValue}</span>
+                        <span className="price-value">$ {dish.priceValue}</span>
                         {!menuLive && <span className="price-note">sample</span>}
                       </span>
                     </div>
@@ -944,9 +1048,9 @@ function App() {
           <div className="container">
             <SectionHeading eyebrow="Handpicked for you" title="Jathara Specials" />
             <p className="specials-lead" data-reveal>Handpicked plates that taste like a temple fair in full colour.</p>
-            <div className="special-cards">
-              {specials.map((item, i) => (
-                <article className="special-card" key={item.name} data-reveal style={{ transitionDelay: `${i * 0.08}s` }}>
+            <div className="special-marquee"><div className="special-cards special-track">
+              {[...specialCards, ...specialCards].map((item, i) => (
+                <article className="special-card" key={`${item.name}-${i}`} aria-hidden={i >= specialCards.length ? true : undefined}>
                   <div className="special-image">
                     {item.image
                       ? <img src={item.image} alt={item.name} />
@@ -956,17 +1060,78 @@ function App() {
                   <h3>{item.name}</h3>
                   <p>{item.note}</p>
                   <span className="dish-price special-price">
-                    <span className="price-value">₹ {item.priceValue}</span>
+                    <span className="price-value">$ {item.priceValue}</span>
                     {!menuLive && <span className="price-note">sample</span>}
                   </span>
+                </article>
+              ))}
+            </div></div>
+          </div>
+        </section>
+
+        <section className="catering-section section-pad" id="catering">
+          <div className="container">
+            <SectionHeading eyebrow="Catering by Jaathara" title="Catering for Every Celebration" />
+            <p className="section-lead-center" data-reveal>From office lunches to wedding feasts, we bring the jathara kitchen to your venue.</p>
+            <div className="catering-grid">
+              <div className="catering-feature" data-reveal style={{ '--cat-bg': `url(${food.thali})` }}>
+                <span className="catering-kicker">Custom menus</span>
+                <h3>Authentic jathara flavours, served at your celebration</h3>
+                <ul className="catering-points">
+                  <li><ChefHat size={16} /> Menus planned with our chefs</li>
+                  <li><Truck size={16} /> Drop-off trays or full service</li>
+                  <li><Leaf size={16} /> Veg, non-veg and satvik options</li>
+                </ul>
+                <div className="catering-actions">
+                  <a className="btn btn-gold" href="tel:+13856148117"><Phone size={16} /> Call for a Quote</a>
+                  <a className="btn btn-ghost-light" href="mailto:jaatharautah@gmail.com?subject=Catering%20enquiry"><Mail size={16} /> Email Us</a>
+                </div>
+              </div>
+              <div className="catering-services">
+                {cateringServices.map(({ icon: Icon, title, text }) => (
+                  <article className="catering-card" key={title} data-reveal>
+                    <span className="catering-ico"><Icon size={22} /></span>
+                    <h4>{title}</h4>
+                    <p>{text}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <ol className="catering-steps" data-reveal>
+              {cateringSteps.map((step, i) => (
+                <li key={step.title}>
+                  <span className="step-num">{i + 1}</span>
+                  <div><strong>{step.title}</strong><p>{step.text}</p></div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className="events-section section-pad" id="events">
+          <img className="clip clip-tr" src={clipWheel} alt="" aria-hidden="true" loading="lazy" />
+          <div className="container">
+            <SectionHeading eyebrow="Celebrate with us" title="Events at Jaathara" />
+            <p className="section-lead-center" data-reveal>Festival nights, live kitchens and private parties, all with the colour of a village jathara.</p>
+            <div className="events-grid">
+              {events.map(({ icon: Icon, tag, title, text, image }) => (
+                <article className="event-card" key={title} data-reveal>
+                  <div className="event-image">
+                    <img src={image} alt={title} loading="lazy" />
+                    <span className="event-tag"><Icon size={14} /> {tag}</span>
+                  </div>
+                  <div className="event-body">
+                    <h4>{title}</h4>
+                    <p>{text}</p>
+                    <a className="event-link" href="#reserve">Enquire now <ArrowRight size={14} /></a>
+                  </div>
                 </article>
               ))}
             </div>
           </div>
         </section>
-
         <section className="testimonials section-pad">
-          <Mandala className="ornament mandala-bl faint" />
+          <img className="clip clip-br" src={clipKolatam} alt="" aria-hidden="true" loading="lazy" />
           <div className="container testimonial-wrap">
             <div className="testimonial-title" data-reveal>
               <span className="eyebrow">Kind words</span>
@@ -992,24 +1157,35 @@ function App() {
 
         <section className="cta-band section-pad" id="reserve">
           <div className="container cta-grid">
-            <div className="cta-card" data-reveal>
+            <div className="cta-card cta-order" data-reveal style={{ '--cta-bg': `url(${heroMain})` }}>
               <span className="eyebrow">The jathara, at home</span>
               <h2>Takeaway &amp; <em>Delivery</em></h2>
-              <p>Enjoy the jathara at home — biryani, curries and festival sweets, packed with the same colour.</p>
+              <p>Enjoy the jathara at home {'\u2014'} biryani, curries and festival sweets, packed fresh from our kitchen.</p>
+              <ul className="cta-tags">
+                <li>Biryani</li>
+                <li>Curries</li>
+                <li>Tandoori</li>
+                <li>Sweets</li>
+              </ul>
               <button
-                className="btn btn-red"
+                className="btn btn-gold"
                 onClick={openOrder}
               >
                 <ShoppingBag size={16} /> Order Online <ArrowRight size={15} />
               </button>
             </div>
-            <div className="cta-card" data-reveal="right">
+            <div className="cta-card cta-reserve" data-reveal="right">
               <span className="eyebrow">A seat at the feast</span>
               <h2>Reserve a <em>Table</em></h2>
-              <p>Family meals, celebrations and catering for gatherings — book an evening at Jaathara in ECIL, Hyderabad.</p>
+              <p>Family meals, celebrations and catering for gatherings {'\u2014'} book an evening at Jaathara.</p>
+              <ul className="cta-info">
+                <li><span className="cta-ico"><Phone size={16} /></span><div><small>Call us</small><a href="tel:+13856148117">+1 (385) 614-8117</a></div></li>
+                <li><span className="cta-ico"><Clock3 size={16} /></span><div><small>Open daily</small><b>11:00 AM {'\u2013'} 11:00 PM</b></div></li>
+                <li><span className="cta-ico"><MapPin size={16} /></span><div><small>Visit us</small><b>9460 S Union Square, Suite 104, Sandy, UT</b></div></li>
+              </ul>
               <div className="reserve-actions">
-                <a className="btn btn-red" href="tel:+919876543210">
-                  <Phone size={16} /> Call +91 98765 43210
+                <a className="btn btn-red" href="tel:+13856148117">
+                  <Phone size={16} /> Call to Reserve
                 </a>
                 <button
                   className="btn btn-outline"
@@ -1024,38 +1200,70 @@ function App() {
       </main>
 
       <footer className="footer" id="contact">
-        <div className="container footer-main">
+        <div className="footer-trim" aria-hidden="true" />
+        <div className="container footer-cta">
+          <div>
+            <span className="footer-cta-kicker">Planning a celebration?</span>
+            <h3>Let Jaathara cater your next event</h3>
+          </div>
+          <div className="footer-cta-actions">
+            <a className="btn btn-gold" href="tel:+13856148117"><Phone size={16} /> +1 (385) 614-8117</a>
+            <a className="btn btn-ghost-light" href="mailto:jaatharautah@gmail.com?subject=Catering%20enquiry"><Mail size={16} /> Get a Quote</a>
+          </div>
+        </div>
+        <div className="container footer-main footer-main-wide">
           <div className="footer-brand">
             <img src={emblem} alt="Jaathara emblem" />
-            <p>A Telangana jathara of pasupu, kumkuma and authentic flavours.</p>
-          </div>
-          <div className="footer-col">
-            <h3>Our Location</h3>
-            <p><MapPin size={16} /> ECIL, Hyderabad,<br /> Telangana, India</p>
-          </div>
-          <div className="footer-col">
-            <h3>Call Us</h3>
-            <a href="tel:+919876543210"><Phone size={16} /> +91 98765 43210</a>
-            <a href="mailto:hello@jaathara.com">hello@jaathara.com</a>
-          </div>
-          <div className="footer-col">
-            <h3>Opening Hours</h3>
-            <p><Clock3 size={16} /> Monday – Sunday</p>
-            <p>11:00 AM – 11:00 PM</p>
-          </div>
-          <div className="footer-col footer-social">
-            <h3>Follow Us</h3>
-            <div>
+            <p>A Telangana jathara of pasupu, kumkuma and authentic flavours {'\u2014'} served in Sandy, Utah.</p>
+            <div className="footer-social">
               <a href="#contact" aria-label="Instagram"><Instagram size={16} /></a>
               <a href="#contact" aria-label="Facebook"><Facebook size={16} /></a>
               <a href="#contact" aria-label="YouTube"><Youtube size={16} /></a>
             </div>
           </div>
+          <div className="footer-col">
+            <h3>Explore</h3>
+            <nav className="footer-links">
+              <a href="#home">Home</a>
+              <a href="#menu">Menu</a>
+              <a href="#specials">Jathara Specials</a>
+              <a href="#about">About Us</a>
+              <a href="#gallery">Gallery</a>
+              <a href="#reserve">Reservations</a>
+            </nav>
+          </div>
+          <div className="footer-col">
+            <h3>Catering</h3>
+            <nav className="footer-links">
+              <a href="#catering">Corporate Catering</a>
+              <a href="#catering">Weddings & Sangeet</a>
+              <a href="#catering">Birthdays & Parties</a>
+              <a href="#catering">Community Gatherings</a>
+              <a href="#catering">Party Trays</a>
+            </nav>
+          </div>
+          <div className="footer-col">
+            <h3>Events</h3>
+            <nav className="footer-links">
+              <a href="#events">Festival Nights</a>
+              <a href="#events">Live Tandoor Evenings</a>
+              <a href="#events">Private Dining</a>
+              <a href="#events">Hall Booking</a>
+            </nav>
+          </div>
+          <div className="footer-col">
+            <h3>Get in Touch</h3>
+            <p className="footer-row"><MapPin size={16} /><span>9460 S Union Square, Suite 104<br />Sandy, UT 84070</span></p>
+            <a className="footer-row" href="tel:+13856148117"><Phone size={16} /><span>+1 (385) 614-8117</span></a>
+            <a className="footer-row" href="mailto:jaatharautah@gmail.com"><Mail size={16} /><span>jaatharautah@gmail.com</span></a>
+            <p className="footer-row"><Clock3 size={16} /><span>Mon {'\u2013'} Sun, 11:00 AM {'\u2013'} 11:00 PM</span></p>
+            <a className="footer-map" href="https://www.google.com/maps/search/?api=1&query=9460+S+Union+Square+Suite+104+Sandy+UT+84070" target="_blank" rel="noreferrer">Get directions <ArrowRight size={14} /></a>
+          </div>
         </div>
         <div className="footer-bottom">
           <div className="container">
-            <span>© 2026 Jaathara Indian Cuisine. All rights reserved.</span>
-            <span>Pasupu · Kumkuma · Muggulu</span>
+            <span>{'\u00a9'} 2026 Jaathara Indian Cuisine. All rights reserved.</span>
+            <span>Pasupu {'\u00b7'} Kumkuma {'\u00b7'} Muggulu</span>
           </div>
         </div>
       </footer>
