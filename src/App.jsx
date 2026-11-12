@@ -5,7 +5,7 @@ import {
   Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
-import gulabJamun from './assets/gulab-jamun.jpg';
+import gulabJamun from './assets/gulab-jamun.png';
 import heroMain from './assets/hero-main.jpg';
 import satTandoori from './assets/sat-tandoori.jpg';
 import OrderModal from './components/OrderModal';
