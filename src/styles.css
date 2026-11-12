@@ -543,7 +543,7 @@ p { margin: 0; }
   padding: 0;
 }
 
-/* Editorial dish cluster */
+/* Hero right visual — tall temple/mehrab arch, no circles, no mandala halo */
 .hero-visual {
   position: relative;
   z-index: 2;
@@ -554,93 +554,53 @@ p { margin: 0; }
 }
 .hero-stage {
   position: relative;
-  width: min(100%, 448px);
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
+  width: min(100%, 420px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: visible;
-}
-.hero-halo {
-  position: absolute;
-  width: 128%;
-  height: 128%;
-  left: -14%;
-  top: -14%;
-  color: #e8b42a;
-  opacity: 0.28;
-  pointer-events: none;
-  z-index: 0;
-  animation: mandala-spin 90s linear infinite;
-  transform-origin: 50% 50%;
-}
-@keyframes mandala-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 .hero-cluster {
   position: relative;
-  width: 84%;
-  aspect-ratio: 1;
+  width: 100%;
   z-index: 2;
   animation: dish-float 5.5s ease-in-out infinite;
-  transform-origin: 50% 55%;
+  transform-origin: 50% 60%;
 }
 @keyframes dish-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+  50% { transform: translateY(-6px); }
+}
+.hero-frame {
+  position: relative;
+  z-index: 2;
+  padding: 14px;
+  width: 76%;
+  margin: 0 auto;
+}
+.hero-outline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1.4px solid rgba(232, 180, 58, 0.9);
+  border-radius: 9999px 9999px 22px 22px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.38);
 }
 .hero-dish {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
   overflow: hidden;
   background: #0a0404;
-  border: 1.5px solid rgba(240, 199, 90, 0.95);
-  box-shadow:
-    0 0 0 6px #3e0a12,
-    0 0 0 7.5px rgba(232, 180, 58, 0.78),
-    0 22px 48px rgba(0, 0, 0, 0.48),
-    0 4px 14px rgba(232, 180, 58, 0.18);
-  z-index: 2;
+  width: 100%;
+  aspect-ratio: 3 / 3.85;
+  border-radius: 9999px 9999px 10px 10px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.42);
 }
 .hero-dish img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 48%;
+  object-position: 50% 46%;
   display: block;
-}
-.hero-sat {
-  position: absolute;
-  width: 27%;
-  aspect-ratio: 1;
-  margin: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  z-index: 4;
-  border: 1.5px solid rgba(240, 199, 90, 0.92);
-  box-shadow:
-    0 0 0 4px #3e0a12,
-    0 0 0 5px rgba(232, 180, 58, 0.55),
-    0 10px 22px rgba(0, 0, 0, 0.42);
-  background: #1a0c08;
-}
-.hero-sat img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.hero-sat-tandoori {
-  left: -10%;
-  bottom: 10%;
-  width: 28%;
-}
-.hero-sat-curry {
-  right: -11%;
-  top: 14%;
-  width: 25.5%;
 }
 .hero-steam {
   position: absolute;
@@ -671,25 +631,23 @@ p { margin: 0; }
   25% { opacity: 0.5; }
   100% { transform: translateY(-56px) scaleX(1.45); opacity: 0; }
 }
-.hero-caption {
+.hero-info-card {
   position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translate(-50%, 55%);
   z-index: 5;
+  left: 2%;
+  bottom: 22px;
   background: rgba(40, 8, 12, 0.94);
-  border: 1px solid rgba(240, 199, 90, 0.7);
-  border-radius: 999px;
-  padding: 6px 18px 7px;
+  border: 1px solid rgba(240, 199, 90, 0.62);
+  border-radius: 8px;
+  padding: 11px 16px 12px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   line-height: 1.15;
-  box-shadow: 0 8px 18px rgba(20, 0, 4, 0.35);
-  white-space: nowrap;
+  box-shadow: 0 10px 22px rgba(12, 0, 4, 0.38);
   pointer-events: none;
 }
-.hero-caption span {
+.hero-info-card span {
   font-family: var(--inscription);
   font-size: 8.5px;
   letter-spacing: 0.22em;
@@ -697,9 +655,51 @@ p { margin: 0; }
   color: #f0c75a;
   font-weight: 600;
 }
-.hero-caption strong {
-  font: 400 14px/1.2 var(--display);
+.hero-info-card strong {
+  font: 400 15px/1.2 var(--display);
   color: #fbf1d8;
+  margin-top: 3px;
+}
+.hero-card-line {
+  display: block;
+  width: 36px;
+  height: 1px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, #e8b42a, transparent);
+}
+/* Staggered slim kebab arch, behind and to the right — height is locked by aspect-ratio */
+.hero-side {
+  position: absolute;
+  margin: 0;
+  width: 36%;
+  aspect-ratio: 3 / 3.85;
+  right: 0;
+  top: 16%;
+  z-index: 1;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 9999px 9999px 16px 16px;
+}
+.hero-side-outline {
+  position: absolute;
+  inset: 0;
+  border: 1.2px solid rgba(232, 180, 58, 0.7);
+  border-radius: 9999px 9999px 16px 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+.hero-side img {
+  display: block;
+  position: absolute;
+  inset: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  max-width: none;
+  object-fit: cover;
+  object-position: 52% 58%;
+  border-radius: 9999px 9999px 8px 8px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
 }
 
 /* Entrance animations, fired after the loader (html.loaded) */
@@ -722,7 +722,7 @@ html.loaded .hero-stage {
   to { opacity: 1; transform: none; }
 }
 @keyframes dish-in {
-  from { opacity: 0; transform: translateY(28px) rotate(-5deg) scale(0.92); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: none; }
 }
 html.is-loading .hero-copy > *,
@@ -1331,7 +1331,7 @@ html.is-loading .hero-stage { opacity: 0; }
 
 @media (min-width: 1320px) {
   .hero { padding: 10px 0 18px; }
-  .hero-stage { width: min(100%, 500px); }
+  .hero-stage { width: min(100%, 440px); }
 }
 
 @media (max-width: 1040px) {
@@ -1355,7 +1355,7 @@ html.is-loading .hero-stage { opacity: 0; }
   .footer-main { grid-template-columns: 1fr 1fr 1fr; }
   .footer-brand { grid-column: span 3; }
   .hero { min-height: 0; padding: 16px 0 20px; }
-  .hero-stage { width: min(100%, 380px); }
+  .hero-stage { width: min(100%, 360px); }
   .hero h1 { font-size: clamp(48px, 7vw, 68px); }
   .charminar-title { width: 160px; height: 180px; }
   .celebrate-services { grid-template-columns: 1fr 1fr; }
@@ -1422,9 +1422,13 @@ html.is-loading .hero-stage { opacity: 0; }
   .hero-subtitle { font-size: 26px; }
   .hero-tagline { font-size: 17px; }
   .hero-visual { min-height: 0; margin: 2px 0 4px; }
-  .hero-stage { width: min(88vw, 340px); }
-  .hero-sat-tandoori, .hero-sat-curry { width: 26%; }
+  .hero-visual { justify-content: center; }
+  .hero-stage { width: min(92vw, 348px); }
+  .hero-frame { width: 90%; }
+  .hero-dish { aspect-ratio: 3 / 3.45; }
+  .hero-side { display: none; }
   .hero-steam { display: none; }
+  .hero-info-card { left: 8%; bottom: 16px; padding: 9px 13px 10px; }
   .charminar-title {
     width: 150px; height: 170px;
     right: 50%; transform: translateX(50%);

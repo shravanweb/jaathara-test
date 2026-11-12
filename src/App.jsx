@@ -7,7 +7,6 @@ import {
 import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun.jpg';
 import heroMain from './assets/hero-main.jpg';
-import satCurry from './assets/sat-curry.jpg';
 import satTandoori from './assets/sat-tandoori.jpg';
 
 const food = {
@@ -687,26 +686,27 @@ function App() {
             </div>
             <div className="hero-visual">
               <div className="hero-stage">
-                <OrnateMandala className="hero-halo" />
                 <div className="hero-cluster">
-                  <div className="hero-dish">
-                    <img
-                      src={heroMain}
-                      alt="Hyderabadi dum biryani in a copper kadai, with chicken, saffron rice and a copper bowl of salan"
-                      width="2000"
-                      height="2000"
-                    />
-                    <div className="hero-steam" aria-hidden="true"><i /><i /><i /></div>
-                  </div>
-                  <figure className="hero-sat hero-sat-tandoori">
+                  <figure className="hero-side">
+                    <span className="hero-side-outline" aria-hidden="true" />
                     <img src={satTandoori} alt="Tandoori kebabs from the grill" width="800" height="800" />
                   </figure>
-                  <figure className="hero-sat hero-sat-curry">
-                    <img src={satCurry} alt="Curry served in a copper bowl" width="800" height="800" />
-                  </figure>
-                  <div className="hero-caption">
+                  <div className="hero-frame">
+                    <span className="hero-outline" aria-hidden="true" />
+                    <div className="hero-dish">
+                      <img
+                        src={heroMain}
+                        alt="Hyderabadi dum biryani in a copper kadai, with chicken, saffron rice and a copper bowl of salan"
+                        width="2000"
+                        height="2000"
+                      />
+                      <div className="hero-steam" aria-hidden="true"><i /><i /><i /></div>
+                    </div>
+                  </div>
+                  <div className="hero-info-card">
                     <span>Signature</span>
                     <strong>Hyderabadi Dum Biryani</strong>
+                    <i className="hero-card-line" aria-hidden="true" />
                   </div>
                 </div>
               </div>
