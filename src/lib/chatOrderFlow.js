@@ -104,9 +104,9 @@ function formatCart(cart) {
   if (!cart.length) return 'Your cart is empty.';
   const lines = cart.map(
     (l) =>
-      `• ${l.name}${l.spicyLevel && l.spicyLevel !== '—' ? ` (${l.spicyLevel})` : ''} × ${l.qty} — ₹ ${l.price * l.qty}`
+      `• ${l.name}${l.spicyLevel && l.spicyLevel !== '—' ? ` (${l.spicyLevel})` : ''} × ${l.qty} — $ ${l.price * l.qty}`
   );
-  lines.push(`Total: ₹ ${cartTotal(cart).toFixed(0)}`);
+  lines.push(`Total: $ ${cartTotal(cart).toFixed(0)}`);
   return lines.join('\n');
 }
 
@@ -156,7 +156,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
     const cats = [...new Set((dishes || []).map((d) => d.category).filter(Boolean))];
     const preview = (dishes || [])
       .slice(0, 8)
-      .map((d) => `• ${d.name} — ₹ ${d.priceValue}`)
+      .map((d) => `• ${d.name} — $ ${d.priceValue}`)
       .join('\n');
     return {
       session,
@@ -183,7 +183,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
       session.step = STEPS.ITEM_READY;
       return {
         session,
-        reply: `${dish.name} — ₹ ${dish.priceValue}${dish.desc ? `\n${dish.desc}` : ''}\n\nWould you like to order this?`,
+        reply: `${dish.name} — $ ${dish.priceValue}${dish.desc ? `\n${dish.desc}` : ''}\n\nWould you like to order this?`,
         actions: [
           { id: 'book', label: 'Order now' },
           { id: 'menu', label: 'Other dishes' },
@@ -211,7 +211,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
       session.pendingItem = other;
       return {
         session,
-        reply: `Switched to ${other.name} — ₹ ${other.priceValue}. Order this?`,
+        reply: `Switched to ${other.name} — $ ${other.priceValue}. Order this?`,
         actions: [{ id: 'book', label: 'Order now' }],
       };
     }
@@ -266,7 +266,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
       session.step = STEPS.QTY;
       return {
         session,
-        reply: `Adding ${dish.name} — ₹ ${dish.priceValue}. How many?`,
+        reply: `Adding ${dish.name} — $ ${dish.priceValue}. How many?`,
         actions: [
           { id: 'qty:1', label: '1' },
           { id: 'qty:2', label: '2' },

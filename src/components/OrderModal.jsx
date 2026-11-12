@@ -106,7 +106,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
                 <div className="order-dish-row" key={dish.name}>
                   <div>
                     <strong>{dish.name}</strong>
-                    <span>₹ {dish.priceValue}</span>
+                    <span>$ {dish.priceValue}</span>
                   </div>
                   <div className="qty-controls">
                     <button type="button" aria-label={`Fewer ${dish.name}`} onClick={() => setQty(dish.name, qty - 1)}>
@@ -162,7 +162,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
           </label>
 
           <p className="modal-total">
-            Total <strong>₹ {total.toFixed(0)}</strong>
+            Total <strong>$ {total.toFixed(0)}</strong>
             {lineItems.length ? ` · ${lineItems.length} item(s)` : ''}
           </p>
 
