@@ -8,6 +8,10 @@ import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun.jpg';
 import heroMain from './assets/hero-main.jpg';
 import satTandoori from './assets/sat-tandoori.jpg';
+import OrderModal from './components/OrderModal';
+import OrderChatWidget from './components/OrderChatWidget';
+import ReserveModal from './components/ReserveModal';
+import { useRestaurantMenu } from './hooks/useRestaurantMenu';
 
 const food = {
   biryani: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=1400&q=80',
@@ -36,26 +40,19 @@ const specialties = [
   { name: 'Desserts', image: food.dessert, icon: 'desserts', category: 'Desserts' }
 ];
 
-const categories = ['All', 'Biryani', 'Curries', 'Tandoori', 'Starters', 'Breads', 'Desserts'];
-
-const dishes = [
-  { category: 'Biryani', name: 'Hyderabadi Dum Biryani', desc: 'Fragrant basmati, dum-cooked the jathara way.', veg: false, price: '₹ —', image: food.biryani },
-  { category: 'Biryani', name: 'Vegetable Dum Biryani', desc: 'Saffron rice and garden vegetables, sealed on dum.', veg: true, price: '₹ —', image: food.biryaniBrass },
-  { category: 'Curries', name: 'Gongura Mamsam', desc: 'Tangy sorrel, the taste of Telangana.', veg: false, price: '₹ —', image: food.curryPots },
-  { category: 'Curries', name: 'Pappu', desc: 'Slow-cooked dal, the everyday comfort of the feast.', veg: true, price: '₹ —' },
-  { category: 'Tandoori', name: 'Tandoori Chicken', desc: 'Kumkuma-red, smoky and tender.', veg: false, price: '₹ —', image: food.tandoori },
-  { category: 'Starters', name: 'Samosa', desc: 'Crisp festival snacks, served with chutney.', veg: true, price: '₹ —', image: food.samosa },
-  { category: 'Breads', name: 'Rumali Roti', desc: 'Handkerchief-thin, straight from the tawa.', veg: true, price: '₹ —' },
-  { category: 'Breads', name: 'Naan', desc: 'Leavened and baked over live coals.', veg: true, price: '₹ —', image: food.bread },
-  { category: 'Breads', name: 'Sarva Pindi', desc: 'Telangana rice-flour pancake, crisp at the edges.', veg: true, price: '₹ —' },
-  { category: 'Desserts', name: 'Ariselu', desc: 'A festival sweet of rice and jaggery.', veg: true, price: '₹ —' },
-  { category: 'Desserts', name: 'Double ka Meetha', desc: 'Hyderabadi bread pudding, rich with saffron.', veg: true, price: '₹ —', image: food.dessert }
-];
-
-const specials = [
-  { name: 'Hyderabadi Dum Biryani', note: 'Fragrant basmati, dum-cooked the jathara way.', image: food.biryani, veg: false },
-  { name: 'Tandoori Chicken', note: 'Kumkuma-red, smoky and tender.', image: food.tandoori, veg: false },
-  { name: 'Gongura Mamsam', note: 'Tangy sorrel, the taste of Telangana.', image: food.curryPots, veg: false }
+/** Showcase menu used only when Restaurant Admin is not linked / empty. */
+const FALLBACK_DISHES = [
+  { category: 'Biryani', name: 'Hyderabadi Dum Biryani', desc: 'Fragrant basmati, dum-cooked the jathara way.', veg: false, priceValue: 380, image: food.biryani },
+  { category: 'Biryani', name: 'Vegetable Dum Biryani', desc: 'Saffron rice and garden vegetables, sealed on dum.', veg: true, priceValue: 320, image: food.biryaniBrass },
+  { category: 'Curries', name: 'Gongura Mamsam', desc: 'Tangy sorrel, the taste of Telangana.', veg: false, priceValue: 340, image: food.curryPots },
+  { category: 'Curries', name: 'Pappu', desc: 'Slow-cooked dal, the everyday comfort of the feast.', veg: true, priceValue: 180 },
+  { category: 'Tandoori', name: 'Tandoori Chicken', desc: 'Kumkuma-red, smoky and tender.', veg: false, priceValue: 360, image: food.tandoori },
+  { category: 'Starters', name: 'Samosa', desc: 'Crisp festival snacks, served with chutney.', veg: true, priceValue: 80, image: food.samosa },
+  { category: 'Breads', name: 'Rumali Roti', desc: 'Handkerchief-thin, straight from the tawa.', veg: true, priceValue: 40 },
+  { category: 'Breads', name: 'Naan', desc: 'Leavened and baked over live coals.', veg: true, priceValue: 50, image: food.bread },
+  { category: 'Breads', name: 'Sarva Pindi', desc: 'Telangana rice-flour pancake, crisp at the edges.', veg: true, priceValue: 90 },
+  { category: 'Desserts', name: 'Ariselu', desc: 'A festival sweet of rice and jaggery.', veg: true, priceValue: 70 },
+  { category: 'Desserts', name: 'Double ka Meetha', desc: 'Hyderabadi bread pudding, rich with saffron.', veg: true, priceValue: 120, image: food.dessert }
 ];
 
 const feastItems = [
@@ -502,6 +499,16 @@ function App() {
   const [notice, setNotice] = useState('');
   const [activeSection, setActiveSection] = useState('home');
   const [scrolled, setScrolled] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
+  const [reserveOpen, setReserveOpen] = useState(false);
+  const {
+    dishes,
+    categoryTabs,
+    specials,
+    status: menuStatus,
+    error: menuError,
+    isLive: menuLive,
+  } = useRestaurantMenu(FALLBACK_DISHES);
   useReveal();
 
   const navItems = [
@@ -515,16 +522,31 @@ function App() {
 
   useEffect(() => {
     const onKey = (event) => {
-      if (event.key === 'Escape') setMobileOpen(false);
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+        setOrderOpen(false);
+        setReserveOpen(false);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    const locked = mobileOpen || orderOpen || reserveOpen;
+    document.body.style.overflow = locked ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
+  }, [mobileOpen, orderOpen, reserveOpen]);
+
+  const openOrder = () => {
+    setMobileOpen(false);
+    setOrderOpen(true);
+  };
+
+  const openReserve = () => {
+    setMobileOpen(false);
+    setReserveOpen(true);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -570,6 +592,13 @@ function App() {
   const visibleDishes = activeCategory === 'All'
     ? dishes
     : dishes.filter((dish) => dish.category === activeCategory);
+
+  // Keep category tab valid when live menu categories change.
+  useEffect(() => {
+    if (!categoryTabs.includes(activeCategory)) {
+      setActiveCategory('All');
+    }
+  }, [categoryTabs, activeCategory]);
 
   return (
     <>
@@ -628,7 +657,7 @@ function App() {
             ))}
             <button
               className="mobile-order"
-              onClick={() => showNotice('Online ordering can be connected to your ordering platform.')}
+              onClick={openOrder}
             >
               <ShoppingBag size={16} /> Order Online
             </button>
@@ -637,7 +666,7 @@ function App() {
             <a className="nav-phone" href="tel:+919876543210"><Phone size={15} /> +91 98765 43210</a>
             <button
               className="order-btn"
-              onClick={() => showNotice('Online ordering can be connected to your ordering platform.')}
+              onClick={openOrder}
             >
               <ShoppingBag size={16} /> Order Online
             </button>
@@ -674,7 +703,7 @@ function App() {
                 <button className="btn btn-gold" onClick={() => goTo('menu')}>
                   <Utensils size={16} /> View Menu <ArrowRight size={15} />
                 </button>
-                <button className="btn btn-outline-gold" onClick={() => goTo('reserve')}>
+                <button className="btn btn-outline-gold" onClick={openReserve}>
                   <CalendarDays size={16} /> Reserve a Table
                 </button>
               </div>
@@ -845,7 +874,7 @@ function App() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <button className="btn btn-red" onClick={() => goTo('reserve')}>
+              <button className="btn btn-red" onClick={openReserve}>
                 <CalendarDays size={16} /> Reserve a Table
               </button>
             </div>
@@ -857,7 +886,7 @@ function App() {
           <div className="container">
             <SectionHeading eyebrow="From the jathara kitchen" title="Explore Our Menu" />
             <div className="menu-filters" role="tablist" aria-label="Menu categories">
-              {categories.map((cat) => (
+              {categoryTabs.map((cat) => (
                 <button
                   key={cat}
                   role="tab"
@@ -869,9 +898,12 @@ function App() {
                 </button>
               ))}
             </div>
+            {menuStatus === 'loading' && (
+              <p className="menu-footnote" role="status">Loading menu from Restaurant Admin…</p>
+            )}
             <div className="menu-list" data-reveal>
               {visibleDishes.map((dish) => (
-                <article className="dish" key={dish.name}>
+                <article className="dish" key={dish.id || dish.name}>
                   <div className={`dish-thumb${dish.image ? '' : ' is-placeholder'}`}>
                     {dish.image ? <img src={dish.image} alt="" /> : <span className="thumb-lotus" aria-hidden="true" />}
                   </div>
@@ -881,17 +913,21 @@ function App() {
                       <h3>{dish.name}</h3>
                       <span className="dish-rule" aria-hidden="true" />
                       <span className="dish-price">
-                        <span className="price-value">{dish.price}</span>
-                        <span className="price-note">sample</span>
+                        <span className="price-value">₹ {dish.priceValue}</span>
+                        {!menuLive && <span className="price-note">sample</span>}
                       </span>
                     </div>
-                    <p>{dish.desc}</p>
+                    <p>{dish.desc || dish.description}</p>
                   </div>
                 </article>
               ))}
             </div>
             <p className="menu-footnote">
-              Prices shown as <strong>₹ —</strong> are sample placeholders. Please confirm with the restaurant.
+              {menuLive
+                ? 'Menu synced from Restaurant Admin — prices and items update when staff change the Menus page.'
+                : menuError
+                  ? `${menuError} Link slug “jaathara” in Admin → Settings → Website Connection, then add menu items.`
+                  : 'Showing sample dishes until Restaurant Admin menu is linked.'}
               {activeCategory !== 'All' && (
                 <>
                   {' '}
@@ -912,14 +948,16 @@ function App() {
               {specials.map((item, i) => (
                 <article className="special-card" key={item.name} data-reveal style={{ transitionDelay: `${i * 0.08}s` }}>
                   <div className="special-image">
-                    <img src={item.image} alt={item.name} />
+                    {item.image
+                      ? <img src={item.image} alt={item.name} />
+                      : <span className="thumb-lotus" aria-hidden="true" />}
                     <DietMark veg={item.veg} />
                   </div>
                   <h3>{item.name}</h3>
                   <p>{item.note}</p>
                   <span className="dish-price special-price">
-                    <span className="price-value">₹ —</span>
-                    <span className="price-note">sample</span>
+                    <span className="price-value">₹ {item.priceValue}</span>
+                    {!menuLive && <span className="price-note">sample</span>}
                   </span>
                 </article>
               ))}
@@ -960,7 +998,7 @@ function App() {
               <p>Enjoy the jathara at home — biryani, curries and festival sweets, packed with the same colour.</p>
               <button
                 className="btn btn-red"
-                onClick={() => showNotice('Online ordering can be connected to your ordering platform.')}
+                onClick={openOrder}
               >
                 <ShoppingBag size={16} /> Order Online <ArrowRight size={15} />
               </button>
@@ -975,7 +1013,7 @@ function App() {
                 </a>
                 <button
                   className="btn btn-outline"
-                  onClick={() => showNotice('Reservations can be connected to the restaurant’s booking workflow.')}
+                  onClick={openReserve}
                 >
                   <CalendarDays size={16} /> Request a Table
                 </button>
@@ -1021,6 +1059,24 @@ function App() {
           </div>
         </div>
       </footer>
+      <OrderModal
+        open={orderOpen}
+        onClose={() => setOrderOpen(false)}
+        onSuccess={showNotice}
+        onError={showNotice}
+        dishes={dishes}
+      />
+      <ReserveModal
+        open={reserveOpen}
+        onClose={() => setReserveOpen(false)}
+        onSuccess={showNotice}
+        onError={showNotice}
+      />
+      <OrderChatWidget
+        dishes={dishes}
+        onOrderPlaced={showNotice}
+        onError={showNotice}
+      />
       {notice && <div className="toast" role="status">{notice}</div>}
     </>
   );
