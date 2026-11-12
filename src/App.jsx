@@ -1,0 +1,1029 @@
+import React, { useEffect, useState } from 'react';
+import {
+  ArrowRight, CalendarDays, ChefHat, Clock3, Instagram,
+  MapPin, Menu as MenuIcon, Phone, ShoppingBag, Utensils, X, Leaf,
+  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed
+} from 'lucide-react';
+import emblem from './assets/jaathara-emblem.png';
+import gulabJamun from './assets/gulab-jamun.jpg';
+import heroMain from './assets/hero-main.jpg';
+import satCurry from './assets/sat-curry.jpg';
+import satTandoori from './assets/sat-tandoori.jpg';
+
+const food = {
+  biryani: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=1400&q=80',
+  biryaniBowl: 'https://images.pexels.com/photos/12737656/pexels-photo-12737656.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  biryaniBrass: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=1200&q=80',
+  curry: 'https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  curryPots: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=1200&q=80',
+  tandoori: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=1200&q=80',
+  bread: 'https://images.unsplash.com/photo-1617692855027-33b14f061079?auto=format&fit=crop&w=1200&q=80',
+  restaurant: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80',
+  thali: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1400&q=80',
+  samosa: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1000&q=80',
+  spices: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1000&q=80',
+  diningWarm: 'https://images.pexels.com/photos/260922/pexels-photo-260922.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  diningWhite: 'https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  diningServe: 'https://images.pexels.com/photos/1579739/pexels-photo-1579739.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  diningRoom: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  dessert: gulabJamun
+};
+
+const specialties = [
+  { name: 'Biryani', image: food.biryaniBowl, icon: 'biryani', category: 'Biryani' },
+  { name: 'Tandoori', image: food.tandoori, icon: 'tandoori', category: 'Tandoori' },
+  { name: 'Curries', image: food.curry, icon: 'curries', category: 'Curries' },
+  { name: 'Starters', image: food.samosa, icon: 'starters', category: 'Starters' },
+  { name: 'Desserts', image: food.dessert, icon: 'desserts', category: 'Desserts' }
+];
+
+const categories = ['All', 'Biryani', 'Curries', 'Tandoori', 'Starters', 'Breads', 'Desserts'];
+
+const dishes = [
+  { category: 'Biryani', name: 'Hyderabadi Dum Biryani', desc: 'Fragrant basmati, dum-cooked the jathara way.', veg: false, price: '₹ —', image: food.biryani },
+  { category: 'Biryani', name: 'Vegetable Dum Biryani', desc: 'Saffron rice and garden vegetables, sealed on dum.', veg: true, price: '₹ —', image: food.biryaniBrass },
+  { category: 'Curries', name: 'Gongura Mamsam', desc: 'Tangy sorrel, the taste of Telangana.', veg: false, price: '₹ —', image: food.curryPots },
+  { category: 'Curries', name: 'Pappu', desc: 'Slow-cooked dal, the everyday comfort of the feast.', veg: true, price: '₹ —' },
+  { category: 'Tandoori', name: 'Tandoori Chicken', desc: 'Kumkuma-red, smoky and tender.', veg: false, price: '₹ —', image: food.tandoori },
+  { category: 'Starters', name: 'Samosa', desc: 'Crisp festival snacks, served with chutney.', veg: true, price: '₹ —', image: food.samosa },
+  { category: 'Breads', name: 'Rumali Roti', desc: 'Handkerchief-thin, straight from the tawa.', veg: true, price: '₹ —' },
+  { category: 'Breads', name: 'Naan', desc: 'Leavened and baked over live coals.', veg: true, price: '₹ —', image: food.bread },
+  { category: 'Breads', name: 'Sarva Pindi', desc: 'Telangana rice-flour pancake, crisp at the edges.', veg: true, price: '₹ —' },
+  { category: 'Desserts', name: 'Ariselu', desc: 'A festival sweet of rice and jaggery.', veg: true, price: '₹ —' },
+  { category: 'Desserts', name: 'Double ka Meetha', desc: 'Hyderabadi bread pudding, rich with saffron.', veg: true, price: '₹ —', image: food.dessert }
+];
+
+const specials = [
+  { name: 'Hyderabadi Dum Biryani', note: 'Fragrant basmati, dum-cooked the jathara way.', image: food.biryani, veg: false },
+  { name: 'Tandoori Chicken', note: 'Kumkuma-red, smoky and tender.', image: food.tandoori, veg: false },
+  { name: 'Gongura Mamsam', note: 'Tangy sorrel, the taste of Telangana.', image: food.curryPots, veg: false }
+];
+
+const feastItems = [
+  'Hyderabadi dum biryani',
+  'Gongura and slow gravies',
+  'Tandoori from the coals',
+  'Rumali, naan and sarva pindi',
+  'A festival sweet to close'
+];
+
+const reviews = [
+  { initials: 'RK', name: 'Ramesh K.', text: 'The muggulu at the door and the biryani on the table — it felt like walking into a Telangana jathara.' },
+  { initials: 'PM', name: 'Priya M.', text: 'Loved the gongura and the tandoori starters. Service was warm, portions generous, colours everywhere.' }
+];
+
+const features = [
+  { icon: ConciergeBell, title: 'Traditional Recipes', lines: ['Traditional', 'Recipes'] },
+  { icon: Leaf, title: 'Fresh & Quality Ingredients', lines: ['Fresh & Quality', 'Ingredients'] },
+  { icon: ChefHat, title: 'Experienced Chefs', lines: ['Experienced', 'Chefs'] },
+  { icon: Award, title: 'Family Friendly Ambience', lines: ['Family Friendly', 'Ambience'] }
+];
+
+const services = [
+  { icon: Home, title: 'Dine-In', sub: 'Restaurant' },
+  { icon: Truck, title: 'Takeaway', sub: '& Delivery' },
+  { icon: UtensilsCrossed, title: 'Catering', sub: 'Services' },
+  { icon: Users, title: 'Private', sub: 'Events' }
+];
+
+function MangoLeaf({ id, flip, colors }) {
+  return (
+    <svg className={`mango-leaf ${flip ? 'flip' : ''}`} viewBox="0 0 40 86" aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={colors[0]} />
+          <stop offset="50%" stopColor={colors[1]} />
+          <stop offset="100%" stopColor={colors[2]} />
+        </linearGradient>
+      </defs>
+      <path fill={`url(#${id})`} d="M20 3c7 8 16 20 14 40-1 14-7 28-12 38-1.2 2.2-3.4 2-4.2-.2C12 66 4 50 3 32 2 16 8 8 20 3z" />
+      <path d="M20 8c-.4 18-.2 38 1.2 66" fill="none" stroke="#f3e7a2" strokeWidth="0.7" opacity="0.7" />
+    </svg>
+  );
+}
+
+function Thoranam() {
+  const shades = [
+    ['#e7f08a', '#5aaa3a', '#2c7a34'],
+    ['#d2e46a', '#4e9836', '#1f6830'],
+    ['#f0f4a0', '#7cb84a', '#3d8c3c'],
+    ['#c6dc62', '#3f8c38', '#1b5c2c'],
+    ['#deec78', '#5a9e3a', '#266e32']
+  ];
+  return (
+    <div className="thoranam" aria-hidden="true">
+      <span className="thoranam-cord" />
+      {Array.from({ length: 40 }).map((_, i) => (
+        <span key={i} className="thoranam-drop" style={{ animationDelay: `${(i % 9) * 0.14}s` }}>
+          <span className="thoranam-tilt" style={{ transform: `rotate(${((i * 11) % 7) - 3}deg)` }}>
+            <MangoLeaf id={`leaf-${i}`} flip={i % 2 === 0} colors={shades[i % shades.length]} />
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function TempleBell({ className = '' }) {
+  const gid = `bellg-${className || 'x'}`;
+  return (
+    <svg className={`temple-bell ${className}`} viewBox="0 0 52 80" aria-hidden="true">
+      <defs>
+        <linearGradient id={gid} x1="0.2" y1="0" x2="0.9" y2="1">
+          <stop offset="0%" stopColor="#F8E19A" />
+          <stop offset="40%" stopColor="#E8B42A" />
+          <stop offset="100%" stopColor="#A66C0A" />
+        </linearGradient>
+      </defs>
+      <line x1="26" y1="0" x2="26" y2="11" stroke="#B8860B" strokeWidth="1.8" />
+      <circle cx="26" cy="12" r="2.6" fill="#F6D36B" stroke="#8A5A08" strokeWidth="0.7" />
+      <path fill={`url(#${gid})`} stroke="#8A5A08" strokeWidth="0.6" d="M16 20c0-5 4.5-8 10-8s10 3 10 8c8 2 10 8 10 16 0 12-8 20-20 20S6 48 6 36c0-8 2-14 10-16z" />
+      <path d="M10 36h32" stroke="#FFF3C0" strokeWidth="0.9" opacity="0.5" />
+      <path d="M8 46c6 3 12 4 18 4s12-1 18-4" fill="none" stroke="#8A5A08" strokeWidth="0.7" opacity="0.45" />
+      <ellipse cx="26" cy="55" rx="18" ry="3.5" fill="#8A5A08" opacity="0.35" />
+      <path d="M26 56v7" stroke="#B8860B" strokeWidth="1.8" />
+      <circle cx="26" cy="67" r="4.2" fill="#F6D36B" stroke="#8A5A08" strokeWidth="0.9" />
+    </svg>
+  );
+}
+
+function LotusRule({ light = false }) {
+  return (
+    <div className={`lotus-rule ${light ? 'light' : ''}`} aria-hidden="true">
+      <span />
+      <svg viewBox="0 0 56 28" fill="currentColor">
+        <path d="M28 26c-3-8-12-11-18-8 6-10 12-14 18-18 6 4 12 8 18 18-6-3-15 0-18 8z" opacity="0.95" />
+        <path d="M28 26c0-10-5-16 0-24 5 8 0 14 0 24z" />
+        <path d="M16 20c4-2 8-2 12 2 4-4 8-4 12-2-6-8-12-10-12-10s-6 2-12 10z" opacity="0.75" />
+      </svg>
+      <span />
+    </div>
+  );
+}
+
+function Mandala({ className = '' }) {
+  return (
+    <svg className={`mandala ${className}`} viewBox="0 0 200 200" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1.1">
+        <circle cx="100" cy="100" r="28" />
+        <circle cx="100" cy="100" r="48" />
+        <circle cx="100" cy="100" r="68" />
+        <circle cx="100" cy="100" r="86" />
+        {Array.from({ length: 16 }).map((_, i) => {
+          const a = (i * Math.PI) / 8;
+          const x1 = 100 + Math.cos(a) * 28;
+          const y1 = 100 + Math.sin(a) * 28;
+          const x2 = 100 + Math.cos(a) * 86;
+          const y2 = 100 + Math.sin(a) * 86;
+          const mx = 100 + Math.cos(a + 0.2) * 56;
+          const my = 100 + Math.sin(a + 0.2) * 56;
+          return <path key={i} d={`M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`} />;
+        })}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const a = (i * Math.PI) / 4 + Math.PI / 8;
+          const x = 100 + Math.cos(a) * 58;
+          const y = 100 + Math.sin(a) * 58;
+          return <circle key={`d${i}`} cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.2" fill="currentColor" stroke="none" />;
+        })}
+      </g>
+    </svg>
+  );
+}
+
+function Palms({ className = '' }) {
+  return (
+    <svg className={`palms ${className}`} viewBox="0 0 180 220" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round">
+        <path d="M86 210 V96" />
+        <path d="M86 100 C60 90 36 68 22 42" />
+        <path d="M86 100 C70 80 58 50 54 22" />
+        <path d="M86 100 C96 72 92 42 80 16" />
+        <path d="M86 100 C112 86 140 70 164 56" />
+        <path d="M86 100 C110 78 128 48 136 22" />
+        <path d="M118 210 V130" />
+        <path d="M118 132 C132 120 152 108 168 100" />
+        <path d="M118 132 C128 112 136 90 132 70" />
+        <path d="M118 132 C108 114 102 90 108 68" />
+        <path d="M30 210 C48 198 70 196 86 210" />
+        <path d="M14 200 C28 192 40 194 48 204" />
+      </g>
+    </svg>
+  );
+}
+
+function Charminar({ className = '' }) {
+  return (
+    <svg className={`charminar ${className}`} viewBox="0 0 200 200" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round">
+        <path d="M28 188 V96 H48 V112 H72 V78 H128 V112 H152 V96 H172 V188" />
+        <path d="M72 78 Q100 18 128 78" />
+        <path d="M86 78 Q100 48 114 78" />
+        <rect x="80" y="118" width="40" height="28" />
+        <path d="M90 146 V172 H110 V146" />
+        <path d="M80 172 H120" />
+        <circle cx="38" cy="88" r="11" />
+        <circle cx="162" cy="88" r="11" />
+        <path d="M38 77 V68 M162 77 V68" />
+        <path d="M32 68 h12 M156 68 h12" />
+        <path d="M16 188 H184" />
+        <path d="M48 96 H72 M128 96 H152" />
+        <path d="M60 168 Q78 148 96 168 M104 168 Q122 148 140 168" />
+        <path d="M36 112 h16 M148 112 h16" />
+      </g>
+    </svg>
+  );
+}
+
+
+function OrnateMandala({ className = '' }) {
+  const petals = Array.from({ length: 16 }, (_, i) => {
+    const a = (i * 22.5 * Math.PI) / 180;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    const x = 100 + c * 62;
+    const y = 100 + s * 62;
+    return (
+      <ellipse
+        key={i}
+        cx={x}
+        cy={y}
+        rx="16"
+        ry="28"
+        transform={`rotate(${i * 22.5} ${x} ${y})`}
+      />
+    );
+  });
+  return (
+    <svg className={`ornate-mandala ${className}`} viewBox="0 0 200 200" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1.05">
+        <circle cx="100" cy="100" r="22" />
+        <circle cx="100" cy="100" r="38" />
+        <circle cx="100" cy="100" r="86" />
+        <circle cx="100" cy="100" r="96" />
+        {petals}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const a = (i * Math.PI) / 4;
+          return (
+            <line
+              key={i}
+              x1={100 + Math.cos(a) * 22}
+              y1={100 + Math.sin(a) * 22}
+              x2={100 + Math.cos(a) * 86}
+              y2={100 + Math.sin(a) * 86}
+            />
+          );
+        })}
+        {Array.from({ length: 16 }).map((_, i) => {
+          const a = ((i + 0.5) * Math.PI) / 8;
+          return <circle key={`d${i}`} cx={100 + Math.cos(a) * 96} cy={100 + Math.sin(a) * 96} r="2.2" fill="currentColor" stroke="none" />;
+        })}
+      </g>
+    </svg>
+  );
+}
+
+function Diya({ className = '' }) {
+  const gid = `diyag-${className || 'x'}`;
+  return (
+    <svg className={`diya ${className}`} viewBox="0 0 72 70" aria-hidden="true">
+      <defs>
+        <linearGradient id={gid} x1="0.2" y1="0" x2="0.8" y2="1">
+          <stop offset="0%" stopColor="#F8E19A" />
+          <stop offset="50%" stopColor="#E8B42A" />
+          <stop offset="100%" stopColor="#A66C0A" />
+        </linearGradient>
+      </defs>
+      <g className="flame">
+        <ellipse cx="36" cy="20" rx="8" ry="16" fill="#FFB347" />
+        <ellipse cx="36" cy="22" rx="4.2" ry="10" fill="#FFF3C0" />
+      </g>
+      <path fill={`url(#${gid})`} stroke="#8A5A08" strokeWidth="0.8" d="M8 48c8-10 16-14 28-14s20 4 28 14c-6 6-16 10-28 10S14 54 8 48z" />
+      <ellipse cx="36" cy="50" rx="26" ry="6" fill={`url(#${gid})`} stroke="#8A5A08" strokeWidth="0.6" />
+      <ellipse cx="36" cy="47" rx="10" ry="3" fill="#FFF3C0" opacity="0.55" />
+    </svg>
+  );
+}
+
+function MandapamFrame() {
+  const lotuses = Array.from({ length: 7 }, (_, i) => 145 + i * 35);
+  const bells = [170, 250, 330];
+  const garland = Array.from({ length: 13 }, (_, i) => {
+    const t = i / 12;
+    return { x: 118 + t * 264, y: 202 + Math.sin(t * Math.PI) * 20, r: 5 + (i % 2) };
+  });
+  return (
+    <svg className="mandapam-frame" viewBox="0 0 500 560" aria-hidden="true">
+      <defs>
+        <linearGradient id="mpGoldV" x1="0" y1="0" x2="0.15" y2="1">
+          <stop offset="0%" stopColor="#FFF3C0" />
+          <stop offset="35%" stopColor="#E8B42A" />
+          <stop offset="100%" stopColor="#8A5A08" />
+        </linearGradient>
+        <linearGradient id="mpGoldH" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#8A5A08" />
+          <stop offset="50%" stopColor="#F6D36B" />
+          <stop offset="100%" stopColor="#8A5A08" />
+        </linearGradient>
+        <linearGradient id="mpShine" x1="0" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stopColor="#FFF8D8" />
+          <stop offset="100%" stopColor="#C99220" />
+        </linearGradient>
+      </defs>
+      {/* Filled pediment */}
+      <path
+        d="M108 168 Q250 18 392 168 L392 178 L108 178 Z"
+        fill="url(#mpGoldH)"
+        stroke="#8A5A08"
+        strokeWidth="1.1"
+      />
+      <path d="M128 168 Q250 44 372 168" fill="none" stroke="#FFF3C0" strokeWidth="1.4" opacity="0.8" />
+      <path d="M148 168 Q250 64 352 168" fill="none" stroke="#8A5A08" strokeWidth="0.8" opacity="0.45" />
+      {/* Apex kalasham */}
+      <g transform="translate(250, 22)">
+        <ellipse cx="0" cy="22" rx="18" ry="10" fill="url(#mpGoldV)" stroke="#8A5A08" strokeWidth="0.8" />
+        <path d="M-14 20 Q0 -4 14 20" fill="url(#mpShine)" stroke="#8A5A08" strokeWidth="0.7" />
+        <path d="M-6 4 Q-14 -10 -4 -18" fill="#E8B42A" stroke="#8A5A08" strokeWidth="0.5" />
+        <path d="M6 4 Q14 -10 4 -18" fill="#E8B42A" stroke="#8A5A08" strokeWidth="0.5" />
+        <path d="M0 -2 C-7 -26 7 -26 0 -40" fill="none" stroke="#C99220" strokeWidth="1.6" />
+        <path d="M-8 -36 Q0 -52 8 -36 Q0 -30 -8 -36" fill="#F6D36B" stroke="#8A5A08" strokeWidth="0.6" />
+        <circle cx="0" cy="-42" r="3.4" fill="#FFF3C0" stroke="#8A5A08" strokeWidth="0.5" />
+      </g>
+      {/* Lintel */}
+      <rect x="106" y="164" width="288" height="32" fill="url(#mpGoldH)" stroke="#8A5A08" strokeWidth="1" />
+      <rect x="112" y="169" width="276" height="22" fill="none" stroke="#FFF3C0" strokeWidth="0.9" opacity="0.75" />
+      {lotuses.map((x) => (
+        <g key={x} transform={`translate(${x}, 180)`}>
+          <ellipse cx="0" cy="0" rx="8" ry="10" fill="#7A2A14" stroke="#8A5A08" strokeWidth="0.5" />
+          <path d="M0-8 Q-4-1 0 7 Q4-1 0-8" fill="#F6D36B" />
+          <ellipse cx="0" cy="-1" rx="2.4" ry="3" fill="#FFF3C0" />
+        </g>
+      ))}
+      {/* Pillars */}
+      {[0, 1].map((side) => {
+        const x = side === 0 ? 58 : 406;
+        return (
+          <g key={side}>
+            <rect x={x} y="188" width="36" height="318" fill="url(#mpGoldV)" stroke="#8A5A08" strokeWidth="0.9" />
+            <rect x={x + 5} y="196" width="5" height="302" fill="#FFF8D8" opacity="0.32" />
+            <rect x={x + 26} y="210" width="2" height="280" fill="#8A5A08" opacity="0.18" />
+            {[208, 278, 358, 438, 496].map((y) => (
+              <g key={y}>
+                <rect x={x - 5} y={y} width="46" height="9" rx="1" fill="url(#mpGoldH)" stroke="#8A5A08" strokeWidth="0.55" />
+                <path d={`M${x - 3} ${y + 4.5} H${x + 39}`} stroke="#FFF3C0" strokeWidth="0.5" opacity="0.55" />
+              </g>
+            ))}
+            {/* lotus capital */}
+            <path d={`M${x - 12} 198 Q${x + 18} 148 ${x + 48} 198 Z`} fill="url(#mpShine)" stroke="#8A5A08" strokeWidth="0.8" />
+            <path d={`M${x - 4} 198 Q${x + 18} 168 ${x + 40} 198`} fill="none" stroke="#8A5A08" strokeWidth="0.6" opacity="0.5" />
+            <rect x={x - 4} y="188" width="44" height="9" fill="url(#mpGoldH)" stroke="#8A5A08" strokeWidth="0.5" />
+            {/* kalasham */}
+            <g transform={`translate(${x + 18}, 152)`}>
+              <ellipse cx="0" cy="10" rx="11" ry="7" fill="url(#mpGoldV)" stroke="#8A5A08" strokeWidth="0.6" />
+              <path d="M-8 8 Q0 -6 8 8" fill="url(#mpShine)" stroke="#8A5A08" strokeWidth="0.5" />
+              <path d="M0 -4 C-5 -18 5 -18 0 -26" fill="none" stroke="#C99220" strokeWidth="1.2" />
+              <circle cx="0" cy="-26" r="2.3" fill="#FFF3C0" stroke="#8A5A08" strokeWidth="0.45" />
+            </g>
+            {/* stepped base */}
+            <rect x={x - 8} y="504" width="52" height="12" rx="1.5" fill="url(#mpGoldH)" stroke="#8A5A08" strokeWidth="0.7" />
+            <rect x={x - 14} y="515" width="64" height="12" rx="1.5" fill="url(#mpGoldV)" stroke="#8A5A08" strokeWidth="0.7" />
+          </g>
+        );
+      })}
+      {/* Inner opening moulding */}
+      <rect x="108" y="206" width="284" height="298" fill="none" stroke="url(#mpGoldH)" strokeWidth="5" />
+      <rect x="114" y="212" width="272" height="286" fill="none" stroke="#FFF3C0" strokeWidth="1" opacity="0.65" />
+      {/* Marigold garland */}
+      {garland.map((g, i) => (
+        <g key={i}>
+          {i < garland.length - 1 && (
+            <line
+              x1={g.x} y1={g.y} x2={garland[i + 1].x} y2={garland[i + 1].y}
+              stroke="#8A5A08" strokeWidth="1.1"
+            />
+          )}
+          <circle cx={g.x} cy={g.y} r={g.r} fill="#E8940A" stroke="#8A5A08" strokeWidth="0.5" />
+          <circle cx={g.x - 1} cy={g.y - 1} r={g.r * 0.4} fill="#FFE08A" />
+        </g>
+      ))}
+      {/* Hanging bells */}
+      {bells.map((x) => (
+        <g key={x} fill="url(#mpGoldV)" stroke="#8A5A08" strokeWidth="0.55">
+          <line x1={x} y1="196" x2={x} y2="214" stroke="#B8860B" strokeWidth="1.1" />
+          <path d={`M${x - 7} 214 c0 8 4 13 7 13s7-5 7-13`} />
+          <circle cx={x} cy="230" r="2.6" />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function MarigoldPetals() {
+  return (
+    <div className="petals" aria-hidden="true">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <span
+          key={i}
+          className="petal"
+          style={{
+            left: `${6 + (i * 9.5) % 90}%`,
+            '--delay': `${i * 1.15}s`,
+            '--dur': `${10 + (i % 5) * 2}s`,
+            '--scale': 0.7 + (i % 4) * 0.18,
+            '--rot': `${i * 32}deg`
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function TempleBorder({ position = 'top' }) {
+  return (
+    <div className={`temple-border temple-border-${position}`} aria-hidden="true">
+      <span className="tb-bands" />
+      <svg className="tb-motifs" viewBox="0 0 1200 28" preserveAspectRatio="xMidYMid meet">
+        {Array.from({ length: 24 }).map((_, i) => (
+          <g key={i} transform={`translate(${25 + i * 50}, 14)`}>
+            <ellipse cx="0" cy="0" rx="8" ry="10" fill="#E8B42A" stroke="#8A5A08" strokeWidth="0.6" />
+            <ellipse cx="0" cy="-1" rx="3" ry="4" fill="#FFF3C0" />
+            <path d="M-11 0 L-6 0 M6 0 L11 0" stroke="#E8B42A" strokeWidth="1.2" />
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function DietMark({ veg }) {
+  const label = veg ? 'Vegetarian' : 'Non-vegetarian';
+  return (
+    <span className={`diet ${veg ? 'veg' : 'nonveg'}`} title={label} aria-label={label}>
+      <i />
+    </span>
+  );
+}
+
+function SectionHeading({ eyebrow, title, light = false }) {
+  return (
+    <div className={`section-heading ${light ? 'light' : ''}`}>
+      {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+      <h2>{title}</h2>
+      <LotusRule light={light} />
+    </div>
+  );
+}
+
+function useReveal() {
+  useEffect(() => {
+    const els = Array.from(document.querySelectorAll('[data-reveal]'));
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      els.forEach((el) => el.classList.add('is-visible'));
+      return undefined;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+function App() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [notice, setNotice] = useState('');
+  const [activeSection, setActiveSection] = useState('home');
+  const [scrolled, setScrolled] = useState(false);
+  useReveal();
+
+  const navItems = [
+    { label: 'Home', id: 'home' },
+    { label: 'Menu', id: 'menu' },
+    { label: 'About Us', id: 'about' },
+    { label: 'Gallery', id: 'gallery' },
+    { label: 'Catering', id: 'catering' },
+    { label: 'Contact', id: 'contact' }
+  ];
+
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const map = { feast: 'menu', specials: 'menu', specialties: 'menu', reserve: 'contact', celebrate: 'catering' };
+    const ids = ['home', 'about', 'specialties', 'celebrate', 'gallery', 'feast', 'menu', 'specials', 'reserve', 'contact'];
+    const onScroll = () => {
+      const y = window.scrollY + 130;
+      let current = 'home';
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        if (top <= y) current = map[id] || id;
+      });
+      setActiveSection(current);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const goTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setMobileOpen(false);
+  };
+
+  const showNotice = (message) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 3400);
+  };
+
+  const openCategory = (name) => {
+    setActiveCategory(name);
+    goTo('menu');
+  };
+
+  const visibleDishes = activeCategory === 'All'
+    ? dishes
+    : dishes.filter((dish) => dish.category === activeCategory);
+
+  return (
+    <>
+      <a className="skip-link" href="#home">Skip to content</a>
+
+      <div className="topbar">
+        <div className="container topbar-inner">
+          <div className="top-links">
+            <Utensils size={12} />
+            <button type="button" onClick={() => goTo('home')}>Dine-In</button>
+            <span className="pipe">|</span>
+            <button type="button" onClick={() => goTo('reserve')}>Takeaway</button>
+            <span className="pipe">|</span>
+            <button type="button" onClick={() => goTo('catering')}>Catering</button>
+            <span className="pipe">|</span>
+            <button type="button" onClick={() => goTo('catering')}>Events</button>
+          </div>
+          <div className="top-meta">
+            <span><MapPin size={12} /> ECIL, Hyderabad</span>
+            <span><Clock3 size={12} /> 11:00 AM – 11:00 PM</span>
+            <span className="top-social">
+              <a href="#contact" aria-label="Instagram"><Instagram size={13} /></a>
+              <a href="#contact" aria-label="Facebook"><Facebook size={13} /></a>
+              <a href="#contact" aria-label="YouTube"><Youtube size={13} /></a>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="festival-crown">
+        <Thoranam />
+      </div>
+
+      <header className={`site-header${scrolled ? ' is-scrolled' : ''}`}>
+        <div className="container nav-wrap">
+          <div className="brand-cluster">
+            <TempleBell className="bell-left" />
+            <button className="brand" onClick={() => goTo('home')} aria-label="Jaathara home">
+              <img src={emblem} alt="Jaathara Indian Cuisine — Let's celebrate Indian food" />
+            </button>
+          </div>
+          <nav
+            id="site-nav"
+            className={mobileOpen ? 'nav-links open' : 'nav-links'}
+            aria-label="Main navigation"
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => goTo(item.id)}
+                className={activeSection === item.id ? 'is-active' : ''}
+                aria-current={activeSection === item.id ? 'page' : undefined}
+              >
+                {item.label}
+              </button>
+            ))}
+            <button
+              className="mobile-order"
+              onClick={() => showNotice('Online ordering can be connected to your ordering platform.')}
+            >
+              <ShoppingBag size={16} /> Order Online
+            </button>
+          </nav>
+          <div className="nav-actions">
+            <a className="nav-phone" href="tel:+919876543210"><Phone size={15} /> +91 98765 43210</a>
+            <button
+              className="order-btn"
+              onClick={() => showNotice('Online ordering can be connected to your ordering platform.')}
+            >
+              <ShoppingBag size={16} /> Order Online
+            </button>
+            <button
+              className="menu-toggle"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+              aria-expanded={mobileOpen}
+              aria-controls="site-nav"
+            >
+              {mobileOpen ? <X /> : <MenuIcon />}
+            </button>
+            <TempleBell className="bell-right" />
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section className="hero" id="home">
+          <div className="hero-grain" aria-hidden="true" />
+          <MarigoldPetals />
+          <TempleBorder position="top" />
+          <div className="container hero-grid">
+            <div className="hero-copy">
+              <span className="hero-kicker">Authentic Indian Cuisine</span>
+              <h1>Jaathara</h1>
+              <div className="hero-subtitle">Indian Cuisine</div>
+              <p className="hero-tagline">A Feast of Authentic Indian Flavors</p>
+              <p className="hero-lead">
+                From the colours of a temple fair — pasupu, kumkuma and muggulu — to dum biryani at your table in ECIL, Hyderabad.
+              </p>
+              <LotusRule light />
+              <div className="hero-buttons">
+                <button className="btn btn-gold" onClick={() => goTo('menu')}>
+                  <Utensils size={16} /> View Menu <ArrowRight size={15} />
+                </button>
+                <button className="btn btn-outline-gold" onClick={() => goTo('reserve')}>
+                  <CalendarDays size={16} /> Reserve a Table
+                </button>
+              </div>
+              <div className="hero-trust">
+                <span><MapPin size={13} /> ECIL, Hyderabad</span>
+                <span className="dot" />
+                <span><Clock3 size={13} /> Open 11:00 AM – 11:00 PM, daily</span>
+              </div>
+            </div>
+            <div className="hero-visual">
+              <div className="hero-stage">
+                <OrnateMandala className="hero-halo" />
+                <div className="hero-cluster">
+                  <div className="hero-dish">
+                    <img
+                      src={heroMain}
+                      alt="Hyderabadi dum biryani in a copper kadai, with chicken, saffron rice and a copper bowl of salan"
+                      width="2000"
+                      height="2000"
+                    />
+                    <div className="hero-steam" aria-hidden="true"><i /><i /><i /></div>
+                  </div>
+                  <figure className="hero-sat hero-sat-tandoori">
+                    <img src={satTandoori} alt="Tandoori kebabs from the grill" width="800" height="800" />
+                  </figure>
+                  <figure className="hero-sat hero-sat-curry">
+                    <img src={satCurry} alt="Curry served in a copper bowl" width="800" height="800" />
+                  </figure>
+                  <div className="hero-caption">
+                    <span>Signature</span>
+                    <strong>Hyderabadi Dum Biryani</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <TempleBorder position="bottom" />
+          <div className="container hero-pills-wrap">
+            <div className="feature-pills" data-reveal>
+              {features.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div className="feature-pill" key={item.title}>
+                    <Icon strokeWidth={1.6} />
+                    <span>{item.lines[0]}<br />{item.lines[1]}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="specialties section-pad" id="specialties">
+          <Mandala className="ornament mandala-tr faint" />
+          <Palms className="ornament palms-right faint" />
+          <div className="container">
+            <SectionHeading title="Explore Our Specialties" />
+            <div className="specialty-grid">
+              {specialties.map((item, i) => (
+                <button
+                  type="button"
+                  className="specialty-card"
+                  key={item.name}
+                  onClick={() => openCategory(item.category)}
+                  data-reveal
+                  style={{ transitionDelay: `${i * 0.07}s` }}
+                >
+                  <div className="specialty-image">
+                    <img src={item.image} alt={item.name} />
+                  </div>
+                  <div className="specialty-label">
+                    <h3>{item.name}</h3>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="celebrate" id="catering">
+          <Mandala className="ornament mandala-bl gold" />
+          <Mandala className="ornament mandala-br gold" />
+          <div className="celebrate-leaves" aria-hidden="true" />
+          <div className="container celebrate-inner">
+            <div className="celebrate-copy" data-reveal>
+              <h2>Dine, Celebrate &amp;<br />Make It a <em>Jaathara!</em></h2>
+              <p>Perfect for family dinners, get-togethers, corporate events &amp; special occasions.</p>
+            </div>
+            <div className="celebrate-services" data-reveal>
+              {services.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div className="service-item" key={item.title}>
+                    <Icon strokeWidth={1.5} />
+                    <strong>{item.title}<br />{item.sub}</strong>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="gallery section-pad" id="gallery">
+          <Palms className="ornament palms-left faint" />
+          <div className="container">
+            <SectionHeading title="Our Gallery" />
+            <div className="gallery-row" data-reveal>
+              <figure><img src={food.diningWarm} alt="Warm evening dining room" /><figcaption>An evening at the feast</figcaption></figure>
+              <figure><img src={food.diningServe} alt="Service in the dining room" /><figcaption>At the table</figcaption></figure>
+              <figure><img src={food.diningRoom} alt="Restaurant dining room" /><figcaption>A seat at Jaathara</figcaption></figure>
+              <figure><img src={food.restaurant} alt="Jaathara dining room" /><figcaption>The hall</figcaption></figure>
+            </div>
+            <div className="gallery-row food-row" data-reveal>
+              <figure><img src={food.biryani} alt="Hyderabadi dum biryani" /><figcaption>Dum biryani</figcaption></figure>
+              <figure><img src={food.tandoori} alt="Tandoori kebabs on the grill" /><figcaption>From the coals</figcaption></figure>
+              <figure><img src={food.thali} alt="Festival thali with roti and curries" /><figcaption>The festival feast</figcaption></figure>
+              <figure><img src={food.samosa} alt="Golden samosas with chutney" /><figcaption>Festival snacks</figcaption></figure>
+            </div>
+          </div>
+        </section>
+
+        <section className="about section-pad" id="about">
+          <Charminar className="ornament charminar-about" />
+          <Mandala className="ornament mandala-br faint" />
+          <div className="container about-grid">
+            <div className="about-photo" data-reveal>
+              <img src={food.restaurant} alt="Jaathara dining room" />
+              <span className="photo-tag">ECIL · Hyderabad</span>
+            </div>
+            <div className="about-copy" data-reveal="right">
+              <span className="eyebrow">Our story</span>
+              <h2>About Jaathara</h2>
+              <LotusRule />
+              <p>
+                At Jaathara Indian Cuisine, we bring the rich and diverse flavors of India to your table.
+                From timeless classics to regional specialties, every dish is prepared with authentic recipes,
+                fresh ingredients, and a passion for great food.
+              </p>
+              <p className="about-aside">
+                A Telangana jathara of pasupu, kumkuma and authentic flavours — a hall dressed for celebration,
+                and a kitchen that cooks as if the fair were in full swing.
+              </p>
+              <button className="btn btn-red" onClick={() => goTo('contact')}>
+                Know More <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="feast section-pad" id="feast">
+          <Palms className="ornament palms-right faint" />
+          <div className="container feast-grid">
+            <div className="feast-photo" data-reveal>
+              <img src={food.thali} alt="Jaathara festival thali with roti, dal and curries" />
+            </div>
+            <div className="feast-copy" data-reveal="right">
+              <span className="eyebrow">The table, laid for celebration</span>
+              <h2>The Festival Feast</h2>
+              <LotusRule />
+              <p>
+                A Jaathara thali is a jathara in miniature: dum biryani, gongura, tandoori from the coals,
+                breads still warm, and a festival sweet to close the meal. It is food meant to be passed
+                around a long table.
+              </p>
+              <ul className="feast-list">
+                {feastItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <button className="btn btn-red" onClick={() => goTo('reserve')}>
+                <CalendarDays size={16} /> Reserve a Table
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="menu-section section-pad" id="menu">
+          <Mandala className="ornament mandala-tl faint" />
+          <div className="container">
+            <SectionHeading eyebrow="From the jathara kitchen" title="Explore Our Menu" />
+            <div className="menu-filters" role="tablist" aria-label="Menu categories">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  role="tab"
+                  aria-selected={activeCategory === cat}
+                  className={activeCategory === cat ? 'is-active' : ''}
+                  onClick={() => setActiveCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <div className="menu-list" data-reveal>
+              {visibleDishes.map((dish) => (
+                <article className="dish" key={dish.name}>
+                  <div className={`dish-thumb${dish.image ? '' : ' is-placeholder'}`}>
+                    {dish.image ? <img src={dish.image} alt="" /> : <span className="thumb-lotus" aria-hidden="true" />}
+                  </div>
+                  <div className="dish-body">
+                    <div className="dish-row">
+                      <DietMark veg={dish.veg} />
+                      <h3>{dish.name}</h3>
+                      <span className="dish-rule" aria-hidden="true" />
+                      <span className="dish-price">
+                        <span className="price-value">{dish.price}</span>
+                        <span className="price-note">sample</span>
+                      </span>
+                    </div>
+                    <p>{dish.desc}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <p className="menu-footnote">
+              Prices shown as <strong>₹ —</strong> are sample placeholders. Please confirm with the restaurant.
+              {activeCategory !== 'All' && (
+                <>
+                  {' '}
+                  <button type="button" className="text-link" onClick={() => setActiveCategory('All')}>
+                    View the full menu <ArrowRight size={14} />
+                  </button>
+                </>
+              )}
+            </p>
+          </div>
+        </section>
+
+        <section className="specials section-pad" id="specials">
+          <div className="container">
+            <SectionHeading eyebrow="Handpicked for you" title="Jathara Specials" />
+            <p className="specials-lead" data-reveal>Handpicked plates that taste like a temple fair in full colour.</p>
+            <div className="special-cards">
+              {specials.map((item, i) => (
+                <article className="special-card" key={item.name} data-reveal style={{ transitionDelay: `${i * 0.08}s` }}>
+                  <div className="special-image">
+                    <img src={item.image} alt={item.name} />
+                    <DietMark veg={item.veg} />
+                  </div>
+                  <h3>{item.name}</h3>
+                  <p>{item.note}</p>
+                  <span className="dish-price special-price">
+                    <span className="price-value">₹ —</span>
+                    <span className="price-note">sample</span>
+                  </span>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="testimonials section-pad">
+          <Mandala className="ornament mandala-bl faint" />
+          <div className="container testimonial-wrap">
+            <div className="testimonial-title" data-reveal>
+              <span className="eyebrow">Kind words</span>
+              <h2>What Our <em>Guests Say</em></h2>
+              <LotusRule />
+            </div>
+            {reviews.map((review) => (
+              <blockquote className="quote-card" key={review.initials} data-reveal>
+                <span className="quote-mark" aria-hidden="true">“</span>
+                <p>{review.text}</p>
+                <footer className="quote-person">
+                  <span className="avatar" aria-hidden="true">{review.initials}</span>
+                  <div>
+                    <strong>{review.name}</strong>
+                    <small>Guest</small>
+                  </div>
+                  <span className="stars" aria-label="Five stars">★★★★★</span>
+                </footer>
+              </blockquote>
+            ))}
+          </div>
+        </section>
+
+        <section className="cta-band section-pad" id="reserve">
+          <div className="container cta-grid">
+            <div className="cta-card" data-reveal>
+              <span className="eyebrow">The jathara, at home</span>
+              <h2>Takeaway &amp; <em>Delivery</em></h2>
+              <p>Enjoy the jathara at home — biryani, curries and festival sweets, packed with the same colour.</p>
+              <button
+                className="btn btn-red"
+                onClick={() => showNotice('Online ordering can be connected to your ordering platform.')}
+              >
+                <ShoppingBag size={16} /> Order Online <ArrowRight size={15} />
+              </button>
+            </div>
+            <div className="cta-card" data-reveal="right">
+              <span className="eyebrow">A seat at the feast</span>
+              <h2>Reserve a <em>Table</em></h2>
+              <p>Family meals, celebrations and catering for gatherings — book an evening at Jaathara in ECIL, Hyderabad.</p>
+              <div className="reserve-actions">
+                <a className="btn btn-red" href="tel:+919876543210">
+                  <Phone size={16} /> Call +91 98765 43210
+                </a>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => showNotice('Reservations can be connected to the restaurant’s booking workflow.')}
+                >
+                  <CalendarDays size={16} /> Request a Table
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer" id="contact">
+        <div className="container footer-main">
+          <div className="footer-brand">
+            <img src={emblem} alt="Jaathara emblem" />
+            <p>A Telangana jathara of pasupu, kumkuma and authentic flavours.</p>
+          </div>
+          <div className="footer-col">
+            <h3>Our Location</h3>
+            <p><MapPin size={16} /> ECIL, Hyderabad,<br /> Telangana, India</p>
+          </div>
+          <div className="footer-col">
+            <h3>Call Us</h3>
+            <a href="tel:+919876543210"><Phone size={16} /> +91 98765 43210</a>
+            <a href="mailto:hello@jaathara.com">hello@jaathara.com</a>
+          </div>
+          <div className="footer-col">
+            <h3>Opening Hours</h3>
+            <p><Clock3 size={16} /> Monday – Sunday</p>
+            <p>11:00 AM – 11:00 PM</p>
+          </div>
+          <div className="footer-col footer-social">
+            <h3>Follow Us</h3>
+            <div>
+              <a href="#contact" aria-label="Instagram"><Instagram size={16} /></a>
+              <a href="#contact" aria-label="Facebook"><Facebook size={16} /></a>
+              <a href="#contact" aria-label="YouTube"><Youtube size={16} /></a>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <div className="container">
+            <span>© 2026 Jaathara Indian Cuisine. All rights reserved.</span>
+            <span>Pasupu · Kumkuma · Muggulu</span>
+          </div>
+        </div>
+      </footer>
+      {notice && <div className="toast" role="status">{notice}</div>}
+    </>
+  );
+}
+
+export default App;
