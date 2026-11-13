@@ -2574,3 +2574,33 @@ html { scroll-padding-top: 110px; }
   .kolam-draw .kd-line, .kolam-draw .kd-dot { animation: none; stroke-dashoffset: 0; opacity: 1; }
 }
 .menu-kolam.kolam-draw { opacity: 0.16; }
+
+/* Menu section: refined professional background */
+.menu-section {
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 0%, rgba(232, 180, 58, 0.10), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(157, 16, 36, 0.05), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 0% 60%, rgba(196, 110, 28, 0.06), transparent 70%),
+    linear-gradient(180deg, #fffaf2 0%, #fdf4e6 100%);
+}
+.menu-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(157, 16, 36, 0.09) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 85%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 20%, transparent 85%);
+  opacity: 0.6;
+}
+.menu-section::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(224, 165, 42, 0.45), transparent);
+  pointer-events: none;
+}
+.menu-section .menu-list > * { background: rgba(255, 255, 255, 0.0); }
