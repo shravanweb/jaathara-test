@@ -1299,7 +1299,7 @@ function App() {
         <div className="footer-bottom">
           <div className="container">
             <span>{'\u00a9'} 2026 Jaathara Indian Cuisine. All rights reserved.</span>
-            <span>Pasupu {'\u00b7'} Kumkuma {'\u00b7'} Muggulu</span>
+            <span className="footer-legal"><a href="#privacy-policy">Privacy Policy</a><a href="#terms">Terms &amp; Conditions</a></span>
           </div>
         </div>
       </footer>

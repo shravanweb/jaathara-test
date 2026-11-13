@@ -2508,3 +2508,11 @@ html { scroll-padding-top: 110px; }
   .footer-kolam-left { left: -70px; bottom: -40px; }
   .footer-kolam-right { right: -60px; top: 20px; width: 200px; height: 200px; }
 }
+/* Mobile menu Order Online text white */
+.nav-links > button.mobile-order, .nav-links > button.mobile-order:hover { color: #fff; }
+.nav-links > button.mobile-order svg { color: #fff; }
+/* Footer legal links */
+.footer-bottom span.footer-legal { display: inline-flex; gap: 18px; letter-spacing: normal; text-transform: none; font-size: 12.5px; }
+.footer-legal a { color: #f8ead8; text-decoration: none; transition: color 0.2s; }
+.footer-legal a:hover { color: #f0c75a; }
+@media (max-width: 740px) { .footer-bottom span.footer-legal { justify-content: center; } }
