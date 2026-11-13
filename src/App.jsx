@@ -20,6 +20,7 @@ import clipMerry from './assets/Cliparts/03-merry-go-round.png';
 import clipSugarcane from './assets/Cliparts/12-sugarcane-cart.png';
 import clipSweetStall from './assets/Cliparts/06-sweet-stall.png';
 import clipFlowerStall from './assets/Cliparts/07-flower-stall.png';
+import kolamMenu from './assets/Kolam/svg_terracotta/14_floral_wreath.svg';
 import kolamFooterA from './assets/Kolam/svg_white/13_chakra_mandala.svg';
 import kolamFooterB from './assets/Kolam/svg_white/16_radial_petal.svg';
 import eventFestival from './assets/event-festival.webp';
@@ -1000,7 +1001,7 @@ function App() {
 
         <section className="menu-section section-pad" id="menu">
           <img className="clip clip-tr clip-balloon" src={clipBalloon} alt="" aria-hidden="true" loading="lazy" />
-          <Mandala className="ornament mandala-tl faint" />
+          <img className="menu-kolam" src={kolamMenu} alt="" aria-hidden="true" loading="lazy" />
           <div className="container">
             <SectionHeading eyebrow="From the jathara kitchen" title="Explore Our Menu" />
             {categoryTabs.length > 1 && <div className="menu-filters" role="tablist" aria-label="Menu categories">
