@@ -80,6 +80,38 @@ function matchMenuItem(text, dishes) {
   return scored[0]?.dish || null;
 }
 
+const SEARCH_STOP = new Set(['show','me','all','the','your','any','have','you','want','some','item','items','list','please','what','which','types','type','of','get','can','give','see','options','menu']);
+
+function singular(w) {
+  return w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w;
+}
+
+/** All dishes matching a keyword like "dosa" or "chicken biryani" (name or category). */
+function searchMenu(text, dishes) {
+  const words = normalize(text)
+    .split(' ')
+    .map(singular)
+    .filter((w) => w.length > 2 && !SEARCH_STOP.has(w));
+  if (!words.length || !dishes?.length) return [];
+  return dishes.filter((dish) => {
+    const hay = normalize(`${dish.name} ${dish.category || ''}`);
+    return words.every((w) => hay.includes(w));
+  });
+}
+
+/** When a keyword matches several dishes, list them all instead of guessing one. */
+function multiMatchReply(text, dishes) {
+  const q = normalize(text);
+  if ((dishes || []).some((d) => normalize(d.name) === q)) return null;
+  const matches = searchMenu(text, dishes);
+  if (matches.length < 2) return null;
+  return {
+    reply: `We have ${matches.length} options for \u201c${text.trim()}\u201d. Tap one to order:`,
+    actions: matches.map((d) => ({ id: `dish:${d.name}`, label: d.name, price: d.priceValue })),
+    listStyle: 'dishes',
+  };
+}
+
 function isYes(text) {
   return /^(yes|yeah|yep|yup|y|ok|okay|sure|confirm|place order|place the order)$/i.test(
     normalize(text)
@@ -177,6 +209,8 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
         ],
       };
     }
+    const multi = multiMatchReply(text, dishes);
+    if (multi) return { session, ...multi };
     const dish = matchMenuItem(text, dishes);
     if (dish) {
       session.pendingItem = dish;
@@ -205,6 +239,12 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
         { id: 'qty:2', label: '2' },
         { id: 'qty:3', label: '3' },
       ] };
+    }
+    const multiOther = multiMatchReply(text, dishes);
+    if (multiOther) {
+      session.step = STEPS.IDLE;
+      session.pendingItem = null;
+      return { session, ...multiOther };
     }
     const other = matchMenuItem(text, dishes);
     if (other) {
@@ -260,6 +300,8 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
         reply: `${formatCart(session.cart)}\n\nWhat’s your phone number?`,
       };
     }
+    const multiMore = multiMatchReply(text, dishes);
+    if (multiMore) return { session, ...multiMore };
     const dish = matchMenuItem(text, dishes);
     if (dish) {
       session.pendingItem = dish;

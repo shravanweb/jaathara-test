@@ -2681,3 +2681,49 @@ html { scroll-padding-top: 110px; }
 @media (max-width: 760px) {
   .gallery { background: linear-gradient(180deg, rgba(255,250,242,0.9), rgba(255,250,242,0.9)), url('./assets/gallery-bg.webp') center top / 220% auto repeat-y, #fbf5ea; }
 }
+/* Chat: aligned dish search results */
+.chat-bubble:has(.chat-dish-list) { max-width: 100%; width: 100%; }
+.chat-dish-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  border: 1px solid rgba(157, 16, 36, 0.14);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.chat-dish-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-bottom: 1px solid rgba(157, 16, 36, 0.08);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.chat-dish-list button:last-child { border-bottom: 0; }
+.chat-dish-list button:hover { background: #fff3e8; }
+.chat-dish-list button:disabled { opacity: 0.6; cursor: default; }
+.chat-dish-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--kumkuma-deep);
+  text-transform: capitalize;
+}
+.chat-dish-price {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b8860b;
+  font-variant-numeric: tabular-nums;
+}

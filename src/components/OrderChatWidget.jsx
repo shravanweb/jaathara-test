@@ -90,8 +90,8 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
   };
   const listRef = useRef(null);
 
-  const pushAssistant = (text, actions = []) => {
-    setMessages((prev) => [...prev, { role: 'assistant', text, actions }]);
+  const pushAssistant = (text, actions = [], listStyle) => {
+    setMessages((prev) => [...prev, { role: 'assistant', text, actions, listStyle }]);
     if (voiceOutRef.current) speak(text);
   };
 
@@ -135,7 +135,7 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
         ]);
         onOrderPlaced?.(confirm);
       } else {
-        pushAssistant(result.reply, result.actions || []);
+        pushAssistant(result.reply, result.actions || [], result.listStyle);
       }
     } catch (err) {
       const message = err.message || 'Could not place order';
@@ -200,7 +200,7 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
               <div key={`${msg.role}-${i}`} className={`chat-bubble ${msg.role}`}>
                 <p>{msg.text}</p>
                 {msg.actions?.length > 0 && (
-                  <div className="chat-actions">
+                  <div className={msg.listStyle === 'dishes' ? 'chat-dish-list' : 'chat-actions'}>
                     {msg.actions.map((action) => (
                       <button
                         key={action.id}
@@ -208,7 +208,10 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
                         disabled={busy}
                         onClick={() => void handleTurn(action.id, action.label)}
                       >
-                        {action.label}
+                        <span className="chat-dish-name">{action.label}</span>
+                        {action.price != null && action.price !== '' ? (
+                          <span className="chat-dish-price">${action.price}</span>
+                        ) : null}
                       </button>
                     ))}
                   </div>
