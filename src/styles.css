@@ -2573,3 +2573,4 @@ html { scroll-padding-top: 110px; }
 @media (prefers-reduced-motion: reduce) {
   .kolam-draw .kd-line, .kolam-draw .kd-dot { animation: none; stroke-dashoffset: 0; opacity: 1; }
 }
+.menu-kolam.kolam-draw { opacity: 0.16; }
