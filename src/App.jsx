@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowRight, CalendarDays, ChefHat, Clock3, Instagram, Mail,
   MapPin, Menu as MenuIcon, Phone, ShoppingBag, Utensils, X, Leaf,
-  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music
+  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music, Search
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun.png';
@@ -595,6 +595,7 @@ function useReveal() {
 function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [menuQuery, setMenuQuery] = useState('');
   const [notice, setNotice] = useState('');
   const [activeSection, setActiveSection] = useState('home');
   const [scrolled, setScrolled] = useState(false);
@@ -705,9 +706,14 @@ function App() {
     goTo('menu');
   };
 
-  const visibleDishes = activeCategory === 'All'
-    ? dishes
-    : dishes.filter((dish) => dish.category === activeCategory);
+  const menuSearch = menuQuery.trim().toLowerCase();
+  const visibleDishes = dishes.filter((dish) => {
+    if (menuSearch) {
+      const hay = `${dish.name || ''} ${dish.desc || dish.description || ''} ${dish.category || ''}`.toLowerCase();
+      return hay.includes(menuSearch);
+    }
+    return activeCategory === 'All' || dish.category === activeCategory;
+  });
 
   // Keep category tab valid when live menu categories change.
   useEffect(() => {
@@ -1000,18 +1006,42 @@ function App() {
                 <button
                   key={cat}
                   role="tab"
-                  aria-selected={activeCategory === cat}
-                  className={activeCategory === cat ? 'is-active' : ''}
-                  onClick={() => setActiveCategory(cat)}
+                  aria-selected={!menuSearch && activeCategory === cat}
+                  className={!menuSearch && activeCategory === cat ? 'is-active' : ''}
+                  onClick={() => { setActiveCategory(cat); setMenuQuery(''); }}
                 >
                   {cat}
                 </button>
               ))}
             </div>}
+            {dishes.length > 0 && (
+              <div className="menu-toolbar">
+                <p className="menu-count">
+                  <strong>{menuSearch ? 'Search results' : activeCategory === 'All' ? 'All dishes' : activeCategory}</strong>
+                  <span>{visibleDishes.length} {visibleDishes.length === 1 ? 'item' : 'items'}</span>
+                </p>
+                <div className="menu-search">
+                <Search size={18} aria-hidden="true" />
+                <input
+                  type="search"
+                  value={menuQuery}
+                  onChange={(e) => setMenuQuery(e.target.value)}
+                  placeholder="Search dishes"
+                  aria-label="Search the menu"
+                />
+                {menuQuery && (
+                  <button type="button" onClick={() => setMenuQuery('')} aria-label="Clear search"><X size={16} /></button>
+                )}
+              </div>
+              </div>
+            )}
             {menuStatus === 'loading' && (
               <p className="menu-footnote" role="status">Loading menu…</p>
             )}
-            <div className="menu-list" data-reveal>
+            {menuSearch && visibleDishes.length === 0 && (
+              <p className="menu-footnote" role="status">No dishes match "{menuQuery.trim()}". Try another name.</p>
+            )}
+            <div className="menu-list">
               {visibleDishes.map((dish) => (
                 <article className="dish" key={dish.id || dish.name}>
                   <div className={`dish-thumb${dish.image ? '' : ' is-placeholder'}`}>

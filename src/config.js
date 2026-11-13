@@ -5,6 +5,7 @@
 export const SITE_SLUG = 'jaathara';
 
 /** Restaurant Server public API (browser calls /api/public/website/:slug/*). */
-export const RESTAURANT_API_URL = import.meta.env.DEV
-  ? 'http://127.0.0.1:4000'
-  : 'https://restaurantapi.d3e.studio';
+/** Uses the live server by default. To test against a local server, set
+ *  VITE_RESTAURANT_API_URL=http://127.0.0.1:4000 in .env.local and restart npm run dev. */
+export const RESTAURANT_API_URL =
+  import.meta.env.VITE_RESTAURANT_API_URL || 'https://restaurantapi.d3e.studio';

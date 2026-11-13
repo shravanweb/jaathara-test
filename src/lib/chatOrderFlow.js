@@ -228,9 +228,9 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
       session,
       reply: 'Spice level?',
       actions: [
-        { id: 'spice:Mild', label: 'Mild' },
-        { id: 'spice:Medium', label: 'Medium' },
-        { id: 'spice:Hot', label: 'Hot' },
+        { id: 'spice:Mild', label: 'Mild 🌶️' },
+        { id: 'spice:Medium', label: 'Medium 🌶️🌶️' },
+        { id: 'spice:Hot', label: 'Hot 🌶️🌶️🌶️' },
         { id: 'spice:—', label: 'No preference' },
       ],
     };

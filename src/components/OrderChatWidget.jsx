@@ -95,11 +95,11 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
     if (voiceOutRef.current) speak(text);
   };
 
-  const handleTurn = async (rawText) => {
+  const handleTurn = async (rawText, shownText) => {
     const text = String(rawText || '').trim();
     if (!text || busy) return;
 
-    setMessages((prev) => [...prev, { role: 'user', text }]);
+    setMessages((prev) => [...prev, { role: 'user', text: shownText || text }]);
     setInput('');
     setBusy(true);
 
@@ -206,7 +206,7 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
                         key={action.id}
                         type="button"
                         disabled={busy}
-                        onClick={() => void handleTurn(action.id)}
+                        onClick={() => void handleTurn(action.id, action.label)}
                       >
                         {action.label}
                       </button>

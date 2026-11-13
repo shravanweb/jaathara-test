@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { LoaderCircle, Minus, Plus, ShoppingBag, X } from 'lucide-react';
+import { LoaderCircle, Minus, Plus, Search, ShoppingBag, Trash2, X } from 'lucide-react';
 import { createOrder } from '../lib/restaurantApi';
 
 export default function OrderModal({ open, onClose, onSuccess, onError, dishes }) {
@@ -10,6 +10,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
   const [qtyByName, setQtyByName] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [dishQuery, setDishQuery] = useState('');
 
   const orderable = useMemo(
     () =>
@@ -34,6 +35,17 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
         .filter(Boolean),
     [orderable, qtyByName]
   );
+
+  const query = dishQuery.trim().toLowerCase();
+  const suggestions = query
+    ? orderable
+        .filter((d) => `${d.name} ${d.category || ''}`.toLowerCase().includes(query))
+        .slice(0, 8)
+    : [];
+  const pickDish = (dish) => {
+    setQtyByName((prev) => ({ ...prev, [dish.name]: Math.max(1, Number(prev[dish.name] || 0)) }));
+    setDishQuery('');
+  };
 
   const total = lineItems.reduce((sum, li) => sum + li.price * li.qty, 0);
 
@@ -99,27 +111,66 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
         </header>
 
         <form className="modal-form" onSubmit={submit}>
-          <div className="order-dish-list">
-            {orderable.map((dish) => {
-              const qty = Number(qtyByName[dish.name] || 0);
-              return (
-                <div className="order-dish-row" key={dish.name}>
-                  <div>
-                    <strong>{dish.name}</strong>
-                    <span>$ {dish.priceValue}</span>
-                  </div>
-                  <div className="qty-controls">
-                    <button type="button" aria-label={`Fewer ${dish.name}`} onClick={() => setQty(dish.name, qty - 1)}>
-                      <Minus size={14} />
-                    </button>
-                    <span>{qty}</span>
-                    <button type="button" aria-label={`More ${dish.name}`} onClick={() => setQty(dish.name, qty + 1)}>
+          <div className="order-picker">
+            <span className="otp-label">Add dishes</span>
+            <div className="order-search">
+              <Search size={15} aria-hidden="true" />
+              <input
+                value={dishQuery}
+                onChange={(e) => setDishQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (suggestions[0]) pickDish(suggestions[0]);
+                  }
+                }}
+                placeholder="Search a dish, e.g. biryani"
+                aria-label="Search dishes to add"
+                autoComplete="off"
+              />
+              {dishQuery && (
+                <button type="button" onClick={() => setDishQuery('')} aria-label="Clear search"><X size={14} /></button>
+              )}
+            </div>
+            {query && (
+              <ul className="order-suggestions" role="listbox">
+                {suggestions.length ? suggestions.map((dish) => (
+                  <li key={dish.name}>
+                    <button type="button" onClick={() => pickDish(dish)}>
+                      <span>
+                        <strong>{dish.name}</strong>
+                        {dish.category && <small>{dish.category}</small>}
+                      </span>
+                      <em>$ {dish.priceValue}</em>
                       <Plus size={14} />
                     </button>
+                  </li>
+                )) : <li className="order-suggestions-empty">No dishes found</li>}
+              </ul>
+            )}
+            {lineItems.length > 0 ? (
+              <div className="order-dish-list order-cart">
+                {lineItems.map((li) => (
+                  <div className="order-dish-row" key={li.name}>
+                    <div>
+                      <strong>{li.name}</strong>
+                      <span>$ {(li.price * li.qty).toFixed(2)}</span>
+                    </div>
+                    <div className="qty-controls">
+                      <button type="button" aria-label={`Fewer ${li.name}`} onClick={() => setQty(li.name, li.qty - 1)}>
+                        {li.qty === 1 ? <Trash2 size={13} /> : <Minus size={14} />}
+                      </button>
+                      <span>{li.qty}</span>
+                      <button type="button" aria-label={`More ${li.name}`} onClick={() => setQty(li.name, li.qty + 1)}>
+                        <Plus size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            ) : (
+              <p className="modal-hint">No dishes added yet. Search above to add items.</p>
+            )}
           </div>
 
           <label>
@@ -162,7 +213,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
           </label>
 
           <p className="modal-total">
-            Total <strong>$ {total.toFixed(0)}</strong>
+            Total <strong>$ {total.toFixed(2)}</strong>
             {lineItems.length ? ` · ${lineItems.length} item(s)` : ''}
           </p>
 
