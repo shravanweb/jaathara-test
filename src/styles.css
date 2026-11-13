@@ -2385,3 +2385,35 @@ html.is-loading .hero-photo { opacity: 0; }
 /* ---- Smaller dappu clip in Our Story ---- */
 .about .clip { width: clamp(110px, 9vw, 140px); opacity: 0.2; right: 2%; bottom: 18px; }
 @media (max-width: 760px) { .about .clip { width: 80px; } }
+
+/* Specialties: plain white background */
+.specialties { background: #ffffff !important; background-image: none !important; }
+.specialties::before, .specialties::after { display: none !important; }
+.specialties .specialty-card { border: 1px solid rgba(160, 120, 60, .16); box-shadow: 0 8px 24px rgba(90, 40, 10, .07); }
+
+/* Festival Feast: white background + animated cliparts */
+.feast { background: #ffffff !important; background-image: none !important; position: relative; overflow: hidden; }
+.feast::before, .feast::after { display: none !important; }
+.feast .feast-clip { width: clamp(120px, 11vw, 170px); opacity: 0.22; }
+.feast .feast-clip-tr { right: 2.5%; top: 34px; animation: feast-float 6s ease-in-out infinite; }
+.feast .feast-clip-bl { left: 2%; bottom: 26px; animation: clip-sway 7s ease-in-out infinite; animation-delay: -2s; }
+@keyframes feast-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(-2deg); }
+}
+@media (max-width: 760px) { .feast .feast-clip { width: 90px; opacity: 0.14; } }
+@media (prefers-reduced-motion: reduce) { .feast .feast-clip { animation: none; } }
+/* Gallery heading matches other section headings */
+.gallery .section-heading h2 { color: var(--kumkuma) !important; }
+
+/* Taller header logo */
+.brand img { width: 272px; height: 88px; }
+@media (max-width: 760px) { .brand img { width: 196px; height: 64px; } }
+
+/* Taller header */
+.nav-wrap { height: 96px; }
+html { scroll-padding-top: 110px; }
+@media (max-width: 760px) { .nav-wrap { height: 74px; } html { scroll-padding-top: 84px; } }
+
+/* Balloon seller: balloons animate inside the SVG, keep the man still */
+.clip.clip-balloon { animation: none !important; transform: none; }

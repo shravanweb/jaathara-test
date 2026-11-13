@@ -298,13 +298,13 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
     session.step = STEPS.ADDRESS;
     return {
       session,
-      reply: 'Delivery address, or type “pickup” for takeaway at ECIL.',
+      reply: 'Delivery address, or type “pickup” for takeaway at our Sandy, Utah restaurant.',
     };
   }
 
   if (session.step === STEPS.ADDRESS) {
     if (text.length < 3) return { session, reply: 'Please enter an address or “pickup”.' };
-    session.guest.address = /pickup|takeaway|collect/i.test(text) ? 'Pickup at ECIL' : text;
+    session.guest.address = /pickup|takeaway|collect/i.test(text) ? 'Pickup at Sandy, Utah' : text;
     session.step = STEPS.CONFIRM;
     return {
       session,

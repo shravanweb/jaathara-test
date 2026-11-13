@@ -147,7 +147,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
             <input
               value={customerAddress}
               onChange={(e) => setCustomerAddress(e.target.value)}
-              placeholder="Address or “pickup at ECIL”"
+              placeholder="Address or “pickup at Sandy, Utah”"
               autoComplete="street-address"
             />
           </label>

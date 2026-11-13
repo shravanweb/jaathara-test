@@ -12,12 +12,17 @@ import OrderModal from './components/OrderModal';
 import OrderChatWidget from './components/OrderChatWidget';
 import ReserveModal from './components/ReserveModal';
 import { useRestaurantMenu } from './hooks/useRestaurantMenu';
-import clipBalloon from './assets/Cliparts/balloonseller.webp';
+import clipBalloon from './assets/Cliparts/balloonseller-animated.svg';
 import clipDappu from './assets/Cliparts/dappumusicians.webp';
 import clipWheel from './assets/Cliparts/giantwheel-animated.svg';
 import clipKolatam from './assets/Cliparts/kolatam-dancers.webp';
 import clipMerry from './assets/Cliparts/03-merry-go-round.png';
 import clipSugarcane from './assets/Cliparts/12-sugarcane-cart.png';
+import clipSweetStall from './assets/Cliparts/06-sweet-stall.png';
+import clipFlowerStall from './assets/Cliparts/07-flower-stall.png';
+import eventFestival from './assets/event-festival.webp';
+import eventTandoor from './assets/event-tandoor.webp';
+import eventPrivate from './assets/event-private.webp';
 
 const food = {
   biryani: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=1400&q=80',
@@ -75,9 +80,9 @@ const cateringSteps = [
 ];
 
 const events = [
-  { icon: PartyPopper, tag: 'Festivals', title: 'Festival Nights', text: 'Special menus and celebrations for Diwali, Sankranti, Ugadi, Bathukamma and Dasara.', image: food.thali },
-  { icon: Flame, tag: 'Live kitchen', title: 'Live Tandoor Evenings', text: 'Kebabs, naan and tikkas fresh off the coals, cooked right in front of you.', image: food.tandoori },
-  { icon: Music, tag: 'Private hire', title: 'Private Dining & Parties', text: 'Book our hall for birthdays, anniversaries, team dinners and family functions.', image: food.diningRoom }
+  { icon: PartyPopper, tag: 'Festivals', title: 'Festival Nights', text: 'Special menus and celebrations for Diwali, Sankranti, Ugadi, Bathukamma and Dasara.', image: eventFestival },
+  { icon: Flame, tag: 'Live kitchen', title: 'Live Tandoor Evenings', text: 'Kebabs, naan and tikkas fresh off the coals, cooked right in front of you.', image: eventTandoor },
+  { icon: Music, tag: 'Private hire', title: 'Private Dining & Parties', text: 'Book our hall for birthdays, anniversaries, team dinners and family functions.', image: eventPrivate }
 ];
 
 
@@ -602,7 +607,7 @@ function App() {
     status: menuStatus,
     error: menuError,
     isLive: menuLive,
-  } = useRestaurantMenu(FALLBACK_DISHES);
+  } = useRestaurantMenu([]);
   const [heroIndex, setHeroIndex] = useState(0);
   const specialCards = React.useMemo(() => {
     if (specials.length >= 8) return specials;
@@ -831,7 +836,7 @@ function App() {
               <div className="hero-subtitle">Indian Cuisine</div>
               <p className="hero-tagline">A Feast of Authentic Indian Flavors</p>
               <p className="hero-lead">
-                From the colours of a temple fair — pasupu, kumkuma and muggulu — to dum biryani at your table in Sandy, Utah.
+                Authentic Telangana and Hyderabadi flavours, cooked fresh every day and served with the joy of a village jathara, right here in Sandy, Utah.
               </p>
               <LotusRule light />
               <div className="hero-buttons">
@@ -958,7 +963,8 @@ function App() {
         </section>
 
         <section className="feast section-pad" id="feast">
-          <Palms className="ornament palms-right faint" />
+          <img className="clip feast-clip feast-clip-tr" src={clipSweetStall} alt="" aria-hidden="true" loading="lazy" />
+          <img className="clip feast-clip feast-clip-bl" src={clipFlowerStall} alt="" aria-hidden="true" loading="lazy" />
           <div className="container feast-grid">
             <div className="feast-photo" data-reveal>
               <img src={food.thali} alt="Jaathara festival thali with roti, dal and curries" />
@@ -985,11 +991,11 @@ function App() {
         </section>
 
         <section className="menu-section section-pad" id="menu">
-          <img className="clip clip-tr" src={clipBalloon} alt="" aria-hidden="true" loading="lazy" />
+          <img className="clip clip-tr clip-balloon" src={clipBalloon} alt="" aria-hidden="true" loading="lazy" />
           <Mandala className="ornament mandala-tl faint" />
           <div className="container">
             <SectionHeading eyebrow="From the jathara kitchen" title="Explore Our Menu" />
-            <div className="menu-filters" role="tablist" aria-label="Menu categories">
+            {categoryTabs.length > 1 && <div className="menu-filters" role="tablist" aria-label="Menu categories">
               {categoryTabs.map((cat) => (
                 <button
                   key={cat}
@@ -1001,9 +1007,9 @@ function App() {
                   {cat}
                 </button>
               ))}
-            </div>
+            </div>}
             {menuStatus === 'loading' && (
-              <p className="menu-footnote" role="status">Loading menu from Restaurant Admin…</p>
+              <p className="menu-footnote" role="status">Loading menu…</p>
             )}
             <div className="menu-list" data-reveal>
               {visibleDishes.map((dish) => (
@@ -1018,7 +1024,6 @@ function App() {
                       <span className="dish-rule" aria-hidden="true" />
                       <span className="dish-price">
                         <span className="price-value">$ {dish.priceValue}</span>
-                        {!menuLive && <span className="price-note">sample</span>}
                       </span>
                     </div>
                     <p>{dish.desc || dish.description}</p>
@@ -1027,11 +1032,7 @@ function App() {
               ))}
             </div>
             <p className="menu-footnote">
-              {menuLive
-                ? 'Menu synced from Restaurant Admin — prices and items update when staff change the Menus page.'
-                : menuError
-                  ? `${menuError} Link slug “jaathara” in Admin → Settings → Website Connection, then add menu items.`
-                  : 'Showing sample dishes until Restaurant Admin menu is linked.'}
+              {!menuLive && menuStatus !== 'loading' && 'Our menu is being updated. Please check back soon or call us to order.'}
               {activeCategory !== 'All' && (
                 <>
                   {' '}
@@ -1044,6 +1045,7 @@ function App() {
           </div>
         </section>
 
+        {specialCards.length > 0 && (
         <section className="specials section-pad" id="specials">
           <div className="container">
             <SectionHeading eyebrow="Handpicked for you" title="Jathara Specials" />
@@ -1061,13 +1063,13 @@ function App() {
                   <p>{item.note}</p>
                   <span className="dish-price special-price">
                     <span className="price-value">$ {item.priceValue}</span>
-                    {!menuLive && <span className="price-note">sample</span>}
                   </span>
                 </article>
               ))}
             </div></div>
           </div>
         </section>
+        )}
 
         <section className="catering-section section-pad" id="catering">
           <div className="container">
@@ -1214,7 +1216,7 @@ function App() {
         <div className="container footer-main footer-main-wide">
           <div className="footer-brand">
             <img src={emblem} alt="Jaathara emblem" />
-            <p>A Telangana jathara of pasupu, kumkuma and authentic flavours {'\u2014'} served in Sandy, Utah.</p>
+            <p>Authentic Telangana and Hyderabadi cuisine, cooked fresh daily and served with festival warmth in Sandy, Utah.</p>
             <div className="footer-social">
               <a href="#contact" aria-label="Instagram"><Instagram size={16} /></a>
               <a href="#contact" aria-label="Facebook"><Facebook size={16} /></a>
