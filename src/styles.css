@@ -2468,3 +2468,9 @@ html { scroll-padding-top: 110px; }
 .order-suggestions svg { color: var(--kumkuma); }
 .order-suggestions-empty { padding: 10px; font-size: 13px; color: var(--muted); }
 .order-cart { max-height: 220px; overflow-y: auto; }
+
+/* Fix: soften left edge of hero photo veil so no vertical seam shows */
+.hero-photo-fade {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 8%, rgba(0,0,0,0.8) 18%, #000 30%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 8%, rgba(0,0,0,0.8) 18%, #000 30%, #000 100%);
+}
