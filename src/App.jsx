@@ -20,6 +20,8 @@ import clipMerry from './assets/Cliparts/03-merry-go-round.png';
 import clipSugarcane from './assets/Cliparts/12-sugarcane-cart.png';
 import clipSweetStall from './assets/Cliparts/06-sweet-stall.png';
 import clipFlowerStall from './assets/Cliparts/07-flower-stall.png';
+import kolamFooterA from './assets/Kolam/svg_white/13_chakra_mandala.svg';
+import kolamFooterB from './assets/Kolam/svg_white/16_radial_petal.svg';
 import eventFestival from './assets/event-festival.webp';
 import eventTandoor from './assets/event-tandoor.webp';
 import eventPrivate from './assets/event-private.webp';
@@ -1233,6 +1235,8 @@ function App() {
 
       <footer className="footer" id="contact">
         <div className="footer-trim" aria-hidden="true" />
+        <img className="footer-kolam footer-kolam-left" src={kolamFooterA} alt="" aria-hidden="true" />
+        <img className="footer-kolam footer-kolam-right" src={kolamFooterB} alt="" aria-hidden="true" />
         <div className="container footer-cta">
           <div>
             <span className="footer-cta-kicker">Planning a celebration?</span>
