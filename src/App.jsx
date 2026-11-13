@@ -845,7 +845,7 @@ function App() {
               <div className="hero-subtitle">Indian Cuisine</div>
               <p className="hero-tagline">A Feast of Authentic Indian Flavors</p>
               <p className="hero-lead">
-                Authentic Telangana and Hyderabadi flavours, cooked fresh every day and served with the joy of a village jathara, right here in Sandy, Utah.
+                Authentic flavours from every corner of India, from North to South, cooked fresh every day and served with the joy of a village jathara, right here in Sandy, Utah.
               </p>
               <LotusRule light />
               <div className="hero-buttons">
