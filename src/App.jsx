@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun.png';
-import heroMain from './assets/hero-main-cut.webp';
+import heroMain from './assets/hero-main.webp';
 import satTandoori from './assets/sat-tandoori.jpg';
 import OrderModal from './components/OrderModal';
 import OrderChatWidget from './components/OrderChatWidget';
