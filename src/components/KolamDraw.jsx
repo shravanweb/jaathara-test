@@ -1,5 +1,5 @@
 ﻿import React, { useMemo } from 'react';
-import raw from '../assets/Kolam/svg_terracotta/09_lotus.svg?raw';
+import raw from '../assets/Kolam/svg_terracotta/02_interlaced_loop_dot.svg?raw';
 
 // Inline kolam that "draws" itself like a muggu being drawn, then fades and repeats.
 export default function KolamDraw({ className = '' }) {
