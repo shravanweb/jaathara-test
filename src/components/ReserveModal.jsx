@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CalendarDays, LoaderCircle, X } from 'lucide-react';
+import { CalendarDays, CheckCircle2, LoaderCircle, X } from 'lucide-react';
 import {
   buildReservedAt,
   createReservation,
@@ -19,6 +19,42 @@ export default function ReserveModal({ open, onClose, onSuccess, onError }) {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [demoOtp, setDemoOtp] = useState('');
+  const makeOtp = () => String(Math.floor(100000 + Math.random() * 900000));
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const phoneDigits = phone.replace(/\D/g, '');
+  const phoneValid = phoneDigits.length >= 10 && phoneDigits.length <= 11;
+  const changePhone = (value) => {
+    setPhone(value);
+    setOtpSent(false);
+    setDemoOtp('');
+    setOtp('');
+    setOtpVerified(false);
+    setOtpError('');
+  };
+  const sendOtp = () => {
+    if (!phoneValid) {
+      setOtpError('Enter a valid 10-digit US phone number.');
+      return;
+    }
+    setDemoOtp(makeOtp());
+    setOtpSent(true);
+    setOtp('');
+    setOtpVerified(false);
+    setOtpError('');
+  };
+  const verifyOtp = () => {
+    if (demoOtp && otp.trim() === demoOtp) {
+      setOtpVerified(true);
+      setOtpError('');
+    } else {
+      setOtpVerified(false);
+      setOtpError('Incorrect code. Please try again.');
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -60,6 +96,10 @@ export default function ReserveModal({ open, onClose, onSuccess, onError }) {
 
   const submit = async (event) => {
     event.preventDefault();
+    if (!otpVerified) {
+      setLocalError('Please verify your phone number first.');
+      return;
+    }
     setSubmitting(true);
     setLocalError('');
     try {
@@ -115,16 +155,49 @@ export default function ReserveModal({ open, onClose, onSuccess, onError }) {
               autoComplete="name"
             />
           </label>
-          <label>
-            <span>Phone</span>
-            <input
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+91 …"
-              autoComplete="tel"
-            />
-          </label>
+          <div className="otp-field">
+            <span className="otp-label">Phone</span>
+            <div className="otp-row">
+              <input
+                required
+                type="tel"
+                value={phone}
+                onChange={(e) => changePhone(e.target.value)}
+                placeholder="(801) 555-0123"
+                autoComplete="tel"
+                disabled={otpVerified}
+              />
+              {otpVerified ? (
+                <span className="otp-verified"><CheckCircle2 size={16} /> Verified</span>
+              ) : (
+                <button type="button" className="btn btn-gold otp-btn" onClick={sendOtp} disabled={!phoneValid}>
+                  {otpSent ? 'Resend OTP' : 'Send OTP'}
+                </button>
+              )}
+            </div>
+            {otpVerified && (
+              <button type="button" className="text-link otp-change" onClick={() => changePhone(phone)}>Change number</button>
+            )}
+            {otpSent && !otpVerified && (
+              <>
+                <p className="modal-hint">Demo mode: enter code <strong>{demoOtp}</strong></p>
+                <div className="otp-row">
+                  <input
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => { setOtp(e.target.value.replace(/\D/g, '')); setOtpError(''); }}
+                    placeholder="Enter 6-digit OTP"
+                    autoComplete="one-time-code"
+                  />
+                  <button type="button" className="btn btn-red otp-btn" onClick={verifyOtp} disabled={otp.length !== 6}>
+                    Verify
+                  </button>
+                </div>
+              </>
+            )}
+            {otpError && <p className="modal-error" role="alert">{otpError}</p>}
+          </div>
           <label>
             <span>Email (optional)</span>
             <input
@@ -192,7 +265,7 @@ export default function ReserveModal({ open, onClose, onSuccess, onError }) {
 
           {localError && <p className="modal-error" role="alert">{localError}</p>}
 
-          <button type="submit" className="btn btn-red modal-submit" disabled={submitting}>
+          <button type="submit" className="btn btn-red modal-submit" disabled={submitting || !otpVerified} title={otpVerified ? undefined : 'Verify your phone number to continue'}>
             {submitting ? (
               <><LoaderCircle size={16} className="spin" /> Booking…</>
             ) : (

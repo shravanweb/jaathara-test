@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { LoaderCircle, MessageCircle, Mic, MicOff, Send, Volume2, X } from 'lucide-react';
+import { LoaderCircle, MessageCircle, Mic, MicOff, Send, Volume2, VolumeX, X } from 'lucide-react';
 import {
   advanceChatOrder,
   buildOrderPayload,
@@ -77,11 +77,22 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [voiceOut, setVoiceOut] = useState(true);
+  const voiceOutRef = useRef(true);
+  const toggleVoice = () => {
+    const next = !voiceOutRef.current;
+    voiceOutRef.current = next;
+    setVoiceOut(next);
+    if (!next && typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+  };
+  const closeChat = () => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+    setOpen(false);
+  };
   const listRef = useRef(null);
 
   const pushAssistant = (text, actions = []) => {
     setMessages((prev) => [...prev, { role: 'assistant', text, actions }]);
-    if (voiceOut) speak(text);
+    if (voiceOutRef.current) speak(text);
   };
 
   const handleTurn = async (rawText) => {
@@ -172,13 +183,13 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
               <button
                 type="button"
                 className={voiceOut ? 'is-on' : ''}
-                onClick={() => setVoiceOut((v) => !v)}
+                onClick={toggleVoice}
                 aria-label={voiceOut ? 'Mute replies' : 'Speak replies'}
-                title="Speak replies"
+                title={voiceOut ? 'Mute replies' : 'Unmute replies'}
               >
-                <Volume2 size={16} />
+                {voiceOut ? <Volume2 size={16} /> : <VolumeX size={16} />}
               </button>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Close chat">
+              <button type="button" onClick={closeChat} aria-label="Close chat">
                 <X size={16} />
               </button>
             </div>

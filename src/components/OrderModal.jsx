@@ -138,7 +138,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
               required
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="+91 …"
+              placeholder="(801) 555-0123"
               autoComplete="tel"
             />
           </label>

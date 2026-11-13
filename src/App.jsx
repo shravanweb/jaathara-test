@@ -1216,7 +1216,7 @@ function App() {
         <div className="container footer-main footer-main-wide">
           <div className="footer-brand">
             <img src={emblem} alt="Jaathara emblem" />
-            <p>Authentic Telangana and Hyderabadi cuisine, cooked fresh daily and served with festival warmth in Sandy, Utah.</p>
+            <p>Authentic Indian cuisine, cooked fresh daily and served with festival warmth in Sandy, Utah.</p>
             <div className="footer-social">
               <a href="#contact" aria-label="Instagram"><Instagram size={16} /></a>
               <a href="#contact" aria-label="Facebook"><Facebook size={16} /></a>
