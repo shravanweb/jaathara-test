@@ -2516,3 +2516,10 @@ html { scroll-padding-top: 110px; }
 .footer-legal a { color: #f8ead8; text-decoration: none; transition: color 0.2s; }
 .footer-legal a:hover { color: #f0c75a; }
 @media (max-width: 740px) { .footer-bottom span.footer-legal { justify-content: center; } }
+/* Footer kolam slow rotate + breathe animation */
+.footer-kolam-left { animation: kolam-spin 60s linear infinite, kolam-breathe 8s ease-in-out infinite; }
+.footer-kolam-right { animation: kolam-spin-rev 75s linear infinite, kolam-breathe 9s ease-in-out -3s infinite; }
+@keyframes kolam-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes kolam-spin-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+@keyframes kolam-breathe { 0%, 100% { opacity: 0.05; } 50% { opacity: 0.11; } }
+@media (prefers-reduced-motion: reduce) { .footer-kolam-left, .footer-kolam-right { animation: none; } }
