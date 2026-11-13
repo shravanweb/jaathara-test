@@ -2604,3 +2604,80 @@ html { scroll-padding-top: 110px; }
   pointer-events: none;
 }
 .menu-section .menu-list > * { background: rgba(255, 255, 255, 0.0); }
+/* Menu section: spice photo background (trial) */
+.menu-section {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.55) 0%, rgba(255, 250, 242, 0.35) 30%, rgba(255, 250, 242, 0.35) 100%),
+    url('./assets/menu-bg.webp') center top / 100% auto repeat-y,
+    #f6efe2;
+}
+.menu-section::before { display: none; }
+@media (max-width: 760px) {
+  .menu-section {
+    background:
+      linear-gradient(180deg, rgba(255, 250, 242, 0.7), rgba(255, 250, 242, 0.7)),
+      url('./assets/menu-bg.webp') center top / 220% auto repeat-y,
+      #f6efe2;
+  }
+}
+/* Menu bg: lighter spice image */
+.menu-section {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.78), rgba(255, 250, 242, 0.72)),
+    url('./assets/menu-bg.webp') center top / 100% auto repeat-y,
+    #f6efe2;
+}
+@media (max-width: 760px) {
+  .menu-section {
+    background:
+      linear-gradient(180deg, rgba(255, 250, 242, 0.85), rgba(255, 250, 242, 0.85)),
+      url('./assets/menu-bg.webp') center top / 220% auto repeat-y,
+      #f6efe2;
+  }
+}
+/* Events section: festive photo background (trial) */
+.events-section {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.72), rgba(255, 250, 242, 0.66)),
+    url('./assets/events-bg.webp') center / cover no-repeat,
+    #f6efe2;
+}
+@media (max-width: 760px) {
+  .events-section {
+    background:
+      linear-gradient(180deg, rgba(255, 250, 242, 0.82), rgba(255, 250, 242, 0.82)),
+      url('./assets/events-bg.webp') center top / 220% auto repeat-y,
+      #f6efe2;
+  }
+}
+/* Menu/Events bg: much lighter so clipart + kolam show */
+.menu-section {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.9), rgba(255, 250, 242, 0.88)),
+    url('./assets/menu-bg.webp') center top / 100% auto repeat-y,
+    #fbf5ea;
+}
+.events-section {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.88), rgba(255, 250, 242, 0.85)),
+    url('./assets/events-bg.webp') center / cover no-repeat,
+    #fbf5ea;
+}
+@media (max-width: 760px) {
+  .menu-section { background: linear-gradient(180deg, rgba(255,250,242,0.92), rgba(255,250,242,0.92)), url('./assets/menu-bg.webp') center top / 220% auto repeat-y, #fbf5ea; }
+  .events-section { background: linear-gradient(180deg, rgba(255,250,242,0.9), rgba(255,250,242,0.9)), url('./assets/events-bg.webp') center top / 220% auto repeat-y, #fbf5ea; }
+}
+.menu-section .clip-balloon { opacity: 0.55; z-index: 1; }
+.menu-kolam.kolam-draw { opacity: 0.3; z-index: 1; }
+/* Gallery section: photo-themed background (trial) */
+.gallery {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 242, 0.88), rgba(255, 250, 242, 0.85)),
+    url('./assets/gallery-bg.webp') center / cover no-repeat,
+    #fbf5ea;
+}
+.gallery .gallery-clip { z-index: 1; opacity: 0.3; }
+@media (max-width: 760px) {
+  .gallery { background: linear-gradient(180deg, rgba(255,250,242,0.9), rgba(255,250,242,0.9)), url('./assets/gallery-bg.webp') center top / 220% auto repeat-y, #fbf5ea; }
+}
