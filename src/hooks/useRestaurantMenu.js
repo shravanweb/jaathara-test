@@ -53,7 +53,7 @@ export function useRestaurantMenu(fallbackDishes = []) {
     const fromLive = categories.length
       ? categories
       : [...new Set(items.map((d) => d.category).filter(Boolean))];
-    return ['All', ...fromLive];
+    return fromLive;
   }, [categories, items]);
 
   const specials = useMemo(() => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowRight, CalendarDays, ChefHat, Clock3, Instagram, Mail,
   MapPin, Menu as MenuIcon, Phone, ShoppingBag, Utensils, X, Leaf,
-  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music, Search
+  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music, Search, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun.png';
@@ -559,6 +559,138 @@ function TempleBorder({ position = 'top' }) {
 }
 
 // Spice levels from the menu sheet (trial: one dish first)
+// Group option dishes (trial: Fried Rice) into one card with style, protein and spice options
+const GROUPED_CATEGORIES = {
+  'Fried Rice': { base: 'Fried Rice', desc: 'Aromatic rice stir-fried with fresh vegetables and Indo-Chinese flavours.' },
+  // A couple of egg noodle items are named "Egg Fried Rice" in admin, so Noodles also accepts that name.
+  Noodles: { base: 'Hakka Noodles', match: 'Hakka Noodles|Fried Rice', desc: 'Wok-tossed Hakka noodles with crisp vegetables and bold Indo-Chinese sauces.' },
+};
+const STYLE_ORDER = ['Regular', 'Schezwan', 'Street Style'];
+const PROTEIN_ORDER = ['Veg', 'Egg', 'Chicken', 'Shrimp', 'Lamb', 'Goat', 'Paneer'];
+function normStyle(raw) {
+  if (/street/i.test(raw)) return 'Street Style';
+  if (/schez/i.test(raw)) return 'Schezwan';
+  if (/regular/i.test(raw)) return 'Regular';
+  return '';
+}
+function parseSpiceText(text) {
+  return String(text || '').split(',').map((t) => {
+    const v = t.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (v === 'mild') return 'Mild';
+    if (v === 'medium') return 'Medium';
+    if (v === 'spicy' || v === 'hot') return 'Spicy';
+    if (v.startsWith('extra')) return 'Extra Spicy';
+    return '';
+  }).filter(Boolean);
+}
+function groupMenuDishes(list) {
+  const out = [];
+  const groups = {};
+  list.forEach((d) => {
+    const cfg = GROUPED_CATEGORIES[d.category];
+    if (cfg) {
+      const n = String(d.name || '').replace(/\s+/g, ' ').trim();
+      const re = new RegExp(`^(.*?)\\s*(?:${cfg.match || cfg.base})\\s*[–—-]?\\s*(.*)$`, 'i');
+      const m = n.match(re);
+      const style = m ? normStyle(m[2]) : '';
+      if (m && style && m[1]) {
+        const protein = m[1].trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+        let g = groups[d.category];
+        if (!g) {
+          g = { isGroup: true, id: `group-${d.category}`, name: cfg.base, category: d.category, desc: cfg.desc, image: '', variants: [], spiceLevels: [] };
+          groups[d.category] = g;
+          out.push(g);
+        }
+        if (!g.image && d.image) g.image = d.image;
+        if (!g.spiceLevels.length) g.spiceLevels = parseSpiceText(d.spicyLevel);
+        g.variants.push({ protein, style, price: d.priceValue, veg: d.veg, item: d });
+        return;
+      }
+    }
+    out.push(d);
+  });
+  Object.values(groups).forEach((g) => {
+    const ord = (arr, order) => [...new Set(arr)].sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
+    g.styles = ord(g.variants.map((v) => v.style), STYLE_ORDER);
+    g.proteins = ord(g.variants.map((v) => v.protein), PROTEIN_ORDER);
+    g.fromPrice = (style) => Math.min(...g.variants.filter((v) => !style || v.style === style).map((v) => v.price));
+  });
+  return out;
+}
+function SpiceInline({ level }) {
+  const l = SPICE_LEVELS.find((x) => x.key === level);
+  const c = l ? l.chillies : 1;
+  return (
+    <span className="dg-spice">
+      {level}
+      <span className="dg-spice-chillies" aria-hidden="true">{'🌶️'.repeat(Math.min(c, 2))}{c > 2 ? (level === 'Extra Spicy' ? '++' : '+') : ''}</span>
+    </span>
+  );
+}
+function DishGroupCard({ group, onOpen }) {
+  return (
+    <article
+      className="dish-group pro"
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
+    >
+      <div className={`dgp-media${group.image ? '' : ' is-placeholder'}`}>
+        {group.image ? <img src={group.image} alt={group.name} /> : <span className="thumb-lotus" aria-hidden="true" />}
+        <span className="dgp-tag">{group.styles.length} styles · {group.proteins.length} proteins</span>
+      </div>
+      <div className="dgp-body">
+        <span className="dgp-eyebrow">Indo-Chinese · Made to order</span>
+        <div className="dgp-titlerow">
+          <h3 className="dgp-title">{group.name}</h3>
+          <span className="dgp-start"><small>Starting at</small>${group.fromPrice().toFixed(2)}</span>
+        </div>
+        <p className="dgp-desc">{group.desc}</p>
+        <ul className="dgp-prices">
+          {group.styles.map((st) => (
+            <li key={st}>
+              <span className="dgp-pname">{st}</span>
+              <span className="dgp-leader" aria-hidden="true" />
+              <span className="dgp-pval">${group.fromPrice(st).toFixed(2)}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="dgp-opts">
+          <div className="dgp-opt">
+            <span className="dgp-label">Protein</span>
+            <div className="dgp-chips">{group.proteins.map((pr) => <span className="dgp-chip" key={pr}>{pr}</span>)}</div>
+          </div>
+          {group.spiceLevels.length > 0 && (
+            <div className="dgp-opt">
+              <span className="dgp-label">Spice</span>
+              <div className="dgp-chips">{group.spiceLevels.map((lv) => <span className="dgp-chip spice" key={lv}><SpiceInline level={lv} /></span>)}</div>
+            </div>
+          )}
+        </div>
+        <span className="dgp-cta"><ShoppingBag size={15} /> Customize &amp; order</span>
+      </div>
+    </article>
+  );
+}
+function OptionRadioGroup({ label, name, options, value, onChange }) {
+  return (
+    <div className="dish-dialog-spice">
+      <h3>{label}</h3>
+      <div className="spice-radio-group" role="radiogroup" aria-label={label}>
+        {options.map((o) => (
+          <label key={o.key} className={`spice-radio${value === o.key ? ' is-checked' : ''}`}>
+            <input type="radio" name={name} value={o.key} checked={value === o.key} onChange={() => onChange(o.key)} />
+            <span className="spice-radio-dot" aria-hidden="true" />
+            <span className="spice-radio-label">{o.key}</span>
+            {o.note && <span className="opt-note">{o.note}</span>}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const SPICE_LEVELS = [
   { key: 'Mild', chillies: 1 },
   { key: 'Medium', chillies: 2 },
@@ -642,8 +774,8 @@ function ChilliBreak({ burst }) {
   );
 }
 
-function SpiceRadioGroup({ name, onPick }) {
-  const levels = dishSpiceLevels(name) || [];
+function SpiceRadioGroup({ name, onPick, levels: given }) {
+  const levels = given || dishSpiceLevels(name) || [];
   const [picked, setPicked] = useState('');
   const group = `spice-${String(name || '').replace(/\W+/g, '-').toLowerCase()}`;
   return (
@@ -681,7 +813,9 @@ function DishDialog({ dish, onClose, onOrder }) {
     const r = target.getBoundingClientRect();
     setBurst({ id: Date.now(), level, x: r.left - pr.left + r.width / 2, y: r.top - pr.top + r.height / 2 });
   };
-  useEffect(() => { setBurst(null); }, [dish]);
+  const [gStyle, setGStyle] = useState('');
+  const [gProtein, setGProtein] = useState('');
+  useEffect(() => { setBurst(null); setGStyle(''); setGProtein(''); }, [dish]);
   useEffect(() => {
     if (!dish) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -691,6 +825,12 @@ function DishDialog({ dish, onClose, onOrder }) {
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
   }, [dish, onClose]);
   if (!dish) return null;
+  const isGroup = Boolean(dish.isGroup);
+  const variant = isGroup ? dish.variants.find((v) => v.style === gStyle && v.protein === gProtein) : null;
+  const priceText = isGroup
+    ? (variant ? `$ ${variant.price}` : `from $ ${dish.fromPrice(gStyle).toFixed(2)}`)
+    : `$ ${dish.priceValue}`;
+  const spiceList = isGroup ? dish.spiceLevels : dishSpiceLevels(dish.name);
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div ref={panelRef} className="modal-panel dish-dialog" role="dialog" aria-modal="true" aria-label={dish.name} onClick={(e) => e.stopPropagation()}>
@@ -703,15 +843,36 @@ function DishDialog({ dish, onClose, onOrder }) {
         <div className="dish-dialog-body">
           {dish.category && <span className="dish-dialog-cat">{dish.category}</span>}
           <div className="dish-dialog-title">
-            <DietMark veg={dish.veg} />
-            <h2>{dish.name}</h2>
+            {(!isGroup || variant) && <DietMark veg={isGroup ? variant.veg : dish.veg} />}
+            <h2>{isGroup && gProtein ? `${gProtein} ${dish.name}${gStyle ? ` – ${gStyle}` : ''}` : dish.name}</h2>
+            <p className="dish-dialog-price">{priceText}</p>
           </div>
-          <p className="dish-dialog-price">$ {dish.priceValue}</p>
           {(dish.desc || dish.description) && <p className="dish-dialog-desc">{dish.desc || dish.description}</p>}
-          {dishSpiceLevels(dish.name) && (
+          {isGroup && (
+            <OptionRadioGroup
+              label="Style"
+              name={`style-${dish.id}`}
+              value={gStyle}
+              onChange={setGStyle}
+              options={dish.styles.map((st) => ({ key: st, note: `$${dish.fromPrice(st).toFixed(2)}` }))}
+            />
+          )}
+          {isGroup && (
+            <OptionRadioGroup
+              label="Protein"
+              name={`protein-${dish.id}`}
+              value={gProtein}
+              onChange={setGProtein}
+              options={dish.proteins.map((pr) => {
+                const v = dish.variants.find((x) => x.protein === pr && (!gStyle || x.style === gStyle));
+                return { key: pr, note: v ? `$${Number(v.price).toFixed(2)}` : '' };
+              })}
+            />
+          )}
+          {spiceList && spiceList.length > 0 && (
             <div className="dish-dialog-spice">
               <h3>Spice level</h3>
-              <SpiceRadioGroup key={dish.name} name={dish.name} onPick={breakChilli} />
+              <SpiceRadioGroup key={dish.id || dish.name} name={dish.name} levels={spiceList} onPick={breakChilli} />
             </div>
           )}
           <button type="button" className="dish-dialog-order" onClick={onOrder}>
@@ -777,6 +938,17 @@ function App() {
   const [orderOpen, setOrderOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState(null);
+  const tabsRef = React.useRef(null);
+  const [tabEdges, setTabEdges] = useState({ left: false, right: false });
+  const updateTabEdges = () => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setTabEdges({ left: el.scrollLeft > 4, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 });
+  };
+  const scrollTabs = (dir) => {
+    const el = tabsRef.current;
+    if (el) el.scrollBy({ left: dir * Math.max(200, el.clientWidth * 0.6), behavior: 'smooth' });
+  };
   const {
     dishes,
     categoryTabs,
@@ -888,13 +1060,29 @@ function App() {
       const hay = `${dish.name || ''} ${dish.desc || dish.description || ''} ${dish.category || ''}`.toLowerCase();
       return hay.includes(menuSearch);
     }
-    return activeCategory === 'All' || dish.category === activeCategory;
+    const current = categoryTabs.includes(activeCategory) ? activeCategory : categoryTabs[0];
+    return dish.category === current;
   });
+  const currentCategory = categoryTabs.includes(activeCategory) ? activeCategory : (categoryTabs[0] || '');
 
-  // Keep category tab valid when live menu categories change.
   useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return undefined;
+    const active = el.querySelector('button.is-active');
+    if (active) {
+      const target = active.offsetLeft - (el.clientWidth - active.offsetWidth) / 2;
+      el.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    }
+    updateTabEdges();
+    window.addEventListener('resize', updateTabEdges);
+    return () => window.removeEventListener('resize', updateTabEdges);
+  }, [activeCategory, categoryTabs.length]);
+
+  // Keep the selected tab on a real category. There is no All tab.
+  useEffect(() => {
+    if (!categoryTabs.length) return;
     if (!categoryTabs.includes(activeCategory)) {
-      setActiveCategory('All');
+      setActiveCategory(categoryTabs[0]);
     }
   }, [categoryTabs, activeCategory]);
 
@@ -1177,23 +1365,28 @@ function App() {
           <KolamDraw className="menu-kolam" />
           <div className="container">
             <SectionHeading eyebrow="From the jathara kitchen" title="Explore Our Menu" />
-            {categoryTabs.length > 1 && <div className="menu-filters" role="tablist" aria-label="Menu categories">
+            {categoryTabs.length > 1 && <div className={`menu-tabs-wrap${tabEdges.left ? ' can-left' : ''}${tabEdges.right ? ' can-right' : ''}`}>
+            <button type="button" className="tabs-arrow left" aria-label="Scroll categories left" onClick={() => scrollTabs(-1)}><ChevronLeft size={18} /></button>
+            <div className="menu-filters" role="tablist" aria-label="Menu categories" ref={tabsRef} onScroll={updateTabEdges}>
               {categoryTabs.map((cat) => (
                 <button
                   key={cat}
                   role="tab"
-                  aria-selected={!menuSearch && activeCategory === cat}
-                  className={!menuSearch && activeCategory === cat ? 'is-active' : ''}
+                  aria-selected={!menuSearch && currentCategory === cat}
+                  className={!menuSearch && currentCategory === cat ? 'is-active' : ''}
                   onClick={() => { setActiveCategory(cat); setMenuQuery(''); }}
                 >
-                  {cat}
+                  <span className="tab-label">{cat}</span>
+                  <span className="tab-count">{dishes.filter((d) => d.category === cat).length}</span>
                 </button>
               ))}
+            </div>
+            <button type="button" className="tabs-arrow right" aria-label="Scroll categories right" onClick={() => scrollTabs(1)}><ChevronRight size={18} /></button>
             </div>}
             {dishes.length > 0 && (
               <div className="menu-toolbar">
                 <p className="menu-count">
-                  <strong>{menuSearch ? 'Search results' : activeCategory === 'All' ? 'All dishes' : activeCategory}</strong>
+                  <strong>{menuSearch ? 'Search results' : currentCategory}</strong>
                   <span>{visibleDishes.length} {visibleDishes.length === 1 ? 'item' : 'items'}</span>
                 </p>
                 <div className="menu-search">
@@ -1218,7 +1411,9 @@ function App() {
               <p className="menu-footnote" role="status">No dishes match "{menuQuery.trim()}". Try another name.</p>
             )}
             <div className="menu-list">
-              {visibleDishes.map((dish) => (
+              {groupMenuDishes(visibleDishes).map((dish) => dish.isGroup ? (
+                <DishGroupCard key={dish.id} group={dish} onOpen={() => setSelectedDish(dish)} />
+              ) : (
                 <article
                   className="dish dish-clickable"
                   key={dish.id || dish.name}
@@ -1245,17 +1440,9 @@ function App() {
                 </article>
               ))}
             </div>
-            <p className="menu-footnote">
-              {!menuLive && menuStatus !== 'loading' && 'Our menu is being updated. Please check back soon or call us to order.'}
-              {activeCategory !== 'All' && (
-                <>
-                  {' '}
-                  <button type="button" className="text-link" onClick={() => setActiveCategory('All')}>
-                    View the full menu <ArrowRight size={14} />
-                  </button>
-                </>
-              )}
-            </p>
+            {!menuLive && menuStatus !== 'loading' && (
+              <p className="menu-footnote">Our menu is being updated. Please check back soon or call us to order.</p>
+            )}
           </div>
         </section>
 
