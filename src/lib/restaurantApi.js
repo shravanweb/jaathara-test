@@ -3,6 +3,7 @@
  * Linking is done only in Admin → Settings → Website Connection (site slug).
  */
 import { RESTAURANT_API_URL, SITE_SLUG } from '../config';
+import { sortCategories, sortMenuItems } from './categoryOrder';
 
 function baseUrl() {
   return `${RESTAURANT_API_URL.replace(/\/$/, '')}/api/public/website/${encodeURIComponent(SITE_SLUG)}`;
@@ -49,12 +50,16 @@ export async function getMenu() {
     available: item.available !== false,
     live: true,
   }));
+  const orderedItems = sortMenuItems(items);
+  const categories = sortCategories(
+    Array.isArray(data.categories) && data.categories.length
+      ? data.categories
+      : orderedItems.map((i) => i.category),
+  );
   return {
     ...data,
-    items,
-    categories: Array.isArray(data.categories) && data.categories.length
-      ? data.categories
-      : [...new Set(items.map((i) => i.category))],
+    items: orderedItems,
+    categories,
   };
 }
 

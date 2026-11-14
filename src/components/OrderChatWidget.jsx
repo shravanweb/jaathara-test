@@ -107,9 +107,7 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
       let mapped = text;
       if (text === 'order' || /^start order$/i.test(text)) mapped = 'order';
       else if (text === 'menu' || /^show menu$/i.test(text)) mapped = 'menu';
-      else if (text.startsWith('dish:')) mapped = text.slice(5);
-      else if (text.startsWith('qty:')) mapped = text.slice(4);
-      else if (text.startsWith('spice:')) mapped = text.slice(6);
+      else if (/^(dish|cat|protein|style|qty|spice):/i.test(text)) mapped = text;
       else if (text === 'more:no' || /^checkout$/i.test(text)) mapped = 'checkout';
       else if (text === 'confirm:yes' || /^place order$/i.test(text)) mapped = 'place order';
       else if (text === 'cancel' || /^cancel$/i.test(text)) mapped = 'cancel';
@@ -208,7 +206,13 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
                         disabled={busy}
                         onClick={() => void handleTurn(action.id, action.label)}
                       >
-                        <span className="chat-dish-name">{action.label}</span>
+                        {action.image ? (
+                          <img src={action.image} alt="" className="chat-dish-thumb" />
+                        ) : null}
+                        <span className="chat-dish-name">
+                          {action.label}
+                          {action.veg === true ? <span className="chat-veg">Veg</span> : null}
+                        </span>
                         {action.price != null && action.price !== '' ? (
                           <span className="chat-dish-price">${action.price}</span>
                         ) : null}

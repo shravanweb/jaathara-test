@@ -45,6 +45,12 @@ function groupedCategoryConfig(category) {
     );
     if (byKey) return byKey[1];
   }
+  const prefix = entries.find(([key, cfg]) => {
+    const k = key.toLowerCase();
+    const b = String(cfg.base).toLowerCase();
+    return raw.startsWith(k + " ") || raw.startsWith(b + " ") || raw.startsWith(k + "(") || raw.startsWith(b + "(");
+  });
+  if (prefix) return prefix[1];
   return null;
 }
 

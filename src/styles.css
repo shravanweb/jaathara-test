@@ -1,4 +1,4 @@
-/* Jaathara — light cream, kumkuma red and turmeric gold */
+﻿/* Jaathara â€” light cream, kumkuma red and turmeric gold */
 
 :root {
   --kumkuma: #9d1024;
@@ -547,7 +547,7 @@ p { margin: 0; }
   padding: 0;
 }
 
-/* Cinematic full-bleed photo — right 56–60% of the hero, no frame.
+/* Cinematic full-bleed photo â€” right 56â€“60% of the hero, no frame.
    The cutout has no studio black, so the dish mixes into the maroon. */
 .hero-photo {
   position: absolute;
@@ -689,7 +689,7 @@ html.loaded .hero-photo {
 html.is-loading .hero-copy > *,
 html.is-loading .hero-photo { opacity: 0; }
 
-/* Feature pills — sit fully inside the hero, overlapping its bottom edge slightly upward */
+/* Feature pills â€” sit fully inside the hero, overlapping its bottom edge slightly upward */
 .hero-pills-wrap {
   position: relative;
   z-index: 5;
@@ -1440,7 +1440,7 @@ html.is-loading .hero-photo { opacity: 0; }
   .modal-row { grid-template-columns: 1fr; }
 }
 
-/* Chat order widget (Website Builder–style) */
+/* Chat order widget (Website Builderâ€“style) */
 .chat-fab {
   position: fixed;
   right: 22px;
@@ -2977,3 +2977,9 @@ html { scroll-padding-top: 110px; }
 button.dgp-chip,button.dgp-cta,button.dgp-pricebtn{font-family:inherit;cursor:pointer}
 .dgp-prices li:has(.dgp-pricebtn){padding:0}
 .dgp-pricebtn{padding:9px 4px}
+
+/* Chat dish list: protein photos and veg markers */
+.chat-dish-list button{align-items:center}
+.chat-dish-thumb{width:40px;height:40px;flex-shrink:0;border-radius:8px;object-fit:cover;background:#f3ebdf}
+.chat-dish-name{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.chat-veg{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;letter-spacing:.02em;line-height:1.4}

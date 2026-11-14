@@ -12,6 +12,7 @@ import OrderModal from './components/OrderModal';
 import OrderChatWidget from './components/OrderChatWidget';
 import ReserveModal from './components/ReserveModal';
 import { useRestaurantMenu } from './hooks/useRestaurantMenu';
+import { displayCategoryName } from './lib/categoryOrder';
 import { groupMenuDishes } from './lib/groupMenuDishes';
 import clipBalloon from './assets/Cliparts/balloonseller-animated.svg';
 import clipDappu from './assets/Cliparts/dappumusicians.webp';
@@ -1408,7 +1409,7 @@ function App() {
                   className={!menuSearch && currentCategory === cat ? 'is-active' : ''}
                   onClick={() => { setActiveCategory(cat); setMenuQuery(''); }}
                 >
-                  <span className="tab-label">{cat}</span>
+                  <span className="tab-label">{displayCategoryName(cat)}</span>
                   <span className="tab-count">{dishes.filter((d) => d.category === cat).length}</span>
                 </button>
               ))}

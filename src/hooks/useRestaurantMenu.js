@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getMenu } from '../lib/restaurantApi';
+import { sortCategories } from '../lib/categoryOrder';
 
 /**
  * Loads live menu from Restaurant Server (Admin → Menus).
@@ -53,7 +54,7 @@ export function useRestaurantMenu(fallbackDishes = []) {
     const fromLive = categories.length
       ? categories
       : [...new Set(items.map((d) => d.category).filter(Boolean))];
-    return fromLive;
+    return sortCategories(fromLive);
   }, [categories, items]);
 
   const specials = useMemo(() => {
