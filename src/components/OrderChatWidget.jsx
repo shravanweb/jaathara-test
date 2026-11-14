@@ -61,7 +61,7 @@ function useSpeechInput(onResult) {
   return { supported: Boolean(supported), listening, start, stop };
 }
 
-export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError }) {
+export default function OrderChatWidget({ dishes = [], menuConfig = null, onOrderPlaced, onError }) {
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState(createEmptySession);
   const [messages, setMessages] = useState(() => [
@@ -113,7 +113,7 @@ export default function OrderChatWidget({ dishes = [], onOrderPlaced, onError })
       else if (text === 'cancel' || /^cancel$/i.test(text)) mapped = 'cancel';
       else if (text === 'book') mapped = 'yes';
 
-      const result = advanceChatOrder(session, mapped, dishes);
+      const result = advanceChatOrder(session, mapped, dishes, menuConfig);
       setSession(result.session);
 
       if (result.readyToSubmit) {

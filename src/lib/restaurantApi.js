@@ -60,6 +60,7 @@ export async function getMenu() {
     ...data,
     items: orderedItems,
     categories,
+    menuConfig: data.menuConfig || null,
   };
 }
 

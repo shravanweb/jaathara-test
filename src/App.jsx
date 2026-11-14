@@ -14,6 +14,27 @@ import ReserveModal from './components/ReserveModal';
 import { useRestaurantMenu } from './hooks/useRestaurantMenu';
 import { displayCategoryName } from './lib/categoryOrder';
 import { groupMenuDishes, parseSpiceText } from './lib/groupMenuDishes';
+import { selectOptionLabel } from './lib/optionLabel';
+
+const MenuFieldsContext = React.createContext({
+  showSpice: true,
+  showVegType: true,
+  variants: { label: 'Choice of protein' },
+});
+function useMenuFields() {
+  return React.useContext(MenuFieldsContext);
+}
+function resolveMenuFields(menuConfig) {
+  const label = menuConfig?.variants?.label || 'Choice of protein';
+  if (!menuConfig) {
+    return { showSpice: true, showVegType: true, variants: { label } };
+  }
+  return {
+    showSpice: menuConfig.showSpice !== false,
+    showVegType: menuConfig.showVegType !== false,
+    variants: { label },
+  };
+}
 import clipBalloon from './assets/Cliparts/balloonseller-animated.svg';
 import clipDappu from './assets/Cliparts/dappumusicians.webp';
 import clipWheel from './assets/Cliparts/giantwheel-animated.svg';
@@ -615,6 +636,7 @@ function DishGroupCard({ group, onOpen }) {
     event.stopPropagation();
     setStyle(next);
   };
+  const menuFields = useMenuFields();
   return (
     <article
       className="dish-group pro"
@@ -625,9 +647,9 @@ function DishGroupCard({ group, onOpen }) {
     >
       <div className={`dgp-media${photo ? '' : ' is-placeholder'}`}>
         {photo ? <FadePhoto src={photo} alt={`${protein ? `${protein} ` : ''}${group.name}`} className="dgp-photo" /> : <span className="thumb-lotus" aria-hidden="true" />}
-        <span className="dgp-tag">{hasStyles ? `${group.styles.length} styles · ${group.proteins.length} proteins` : `${group.proteins.length} proteins`}</span>
+        <span className="dgp-tag">{hasStyles ? `${group.styles.length} styles · ${group.proteins.length} options` : `${group.proteins.length} options`}</span>
         {showDots ? (
-          <div className="dgp-dots" role="tablist" aria-label="Protein photos">
+          <div className="dgp-dots" role="tablist" aria-label={selectOptionLabel(menuFields.variants?.label) + " photos"}>
             {proteinThumbs.map((t) => (
               <button
                 key={t.protein}
@@ -645,54 +667,73 @@ function DishGroupCard({ group, onOpen }) {
         <span className="dgp-eyebrow">Indo-Chinese · Made to order</span>
         <div className="dgp-titlerow">
           <h3 className="dgp-title">{group.name}</h3>
-          <span className="dgp-start"><small>Starting at</small>${group.fromPrice().toFixed(2)}</span>
+          <span className="dgp-start"><small>Starting at</small>${(hasStyles ? group.fromPrice(style) : group.fromPrice()).toFixed(2)}</span>
         </div>
         <p className="dgp-desc">{group.desc}</p>
-        <ul className="dgp-prices">
-          {(hasStyles ? group.styles : group.proteins).map((row) => {
-            const isStyle = hasStyles;
-            const price = isStyle ? group.fromPrice(row) : group.priceForProtein(row);
-            const selected = isStyle ? style === row : protein === row;
-            return (
-              <li key={row}>
+        {hasStyles ? (
+          <div className="dgp-styles">
+            <span className="dgp-label">Style</span>
+            <div className="dgp-chips" role="radiogroup" aria-label="Style">
+              {group.styles.map((st) => (
                 <button
                   type="button"
-                  className={`dgp-pricebtn${selected ? ' is-selected' : ''}`}
-                  onClick={(e) => (isStyle ? pickStyle(e, row) : pickProtein(e, row))}
-                  onMouseEnter={() => (isStyle ? setStyle(row) : setProtein(row))}
+                  role="radio"
+                  aria-checked={style === st}
+                  className={`dgp-chip${style === st ? ' is-selected' : ''}`}
+                  key={st}
+                  onClick={(e) => pickStyle(e, st)}
+                  onMouseEnter={() => setStyle(st)}
+                  onKeyDown={(e) => e.stopPropagation()}
                 >
-                  <span className="dgp-pname">{row}</span>
-                  <span className="dgp-leader" aria-hidden="true" />
-                  <span className="dgp-pval">${Number(price).toFixed(2)}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="dgp-opts">
-          <div className="dgp-opt">
-            <span className="dgp-label">Protein</span>
-            <div className="dgp-chips">
-              {group.proteins.map((pr) => (
-                <button
-                  type="button"
-                  className={`dgp-chip${protein === pr ? ' is-selected' : ''}`}
-                  key={pr}
-                  onClick={(e) => pickProtein(e, pr)}
-                  onMouseEnter={() => setProtein(pr)}
-                >
-                  {pr}
+                  {st}
                 </button>
               ))}
             </div>
           </div>
-          {group.spiceLevels.length > 0 && (
+        ) : null}
+        <div className="dgp-prices-block">
+          <span className="dgp-label" id={`dgp-pick-${String(group.name || 'option').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+            {selectOptionLabel(menuFields.variants?.label)}
+          </span>
+          <ul
+            className="dgp-prices"
+            role="listbox"
+            aria-labelledby={`dgp-pick-${String(group.name || 'option').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+          >
+            {group.proteins.map((row) => {
+              const match = hasStyles && style
+                ? group.variants.find((v) => v.protein === row && v.style === style)
+                : null;
+              const price = match ? match.price : group.priceForProtein(row);
+              const selected = protein === row;
+              return (
+                <li key={row} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    className={`dgp-pricebtn${selected ? ' is-selected' : ''}`}
+                    onClick={(e) => pickProtein(e, row)}
+                    onMouseEnter={() => setProtein(row)}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
+                    <span className="dgp-pname">{row}</span>
+                    <span className="dgp-leader" aria-hidden="true" />
+                    <span className="dgp-pval">${Number(price).toFixed(2)}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+        {menuFields.showSpice && group.spiceLevels.length > 0 ? (
+          <div className="dgp-opts">
             <div className="dgp-opt">
               <span className="dgp-label">Spice</span>
               <div className="dgp-chips">{group.spiceLevels.map((lv) => <span className="dgp-chip spice" key={lv}><SpiceInline level={lv} /></span>)}</div>
             </div>
-          )}
-        </div>
+          </div>
+        ) : null}
         <button type="button" className="dgp-cta" onClick={(e) => { e.stopPropagation(); open(); }}><ShoppingBag size={15} /> Customize &amp; order</button>
       </div>
     </article>
@@ -730,13 +771,15 @@ function dishSpiceLevels(dish) {
   return parseSpiceText(dish.spicyLevel);
 }
 function CustomizableTag({ dish, name }) {
+  const { showSpice } = useMenuFields();
   const levels = dishSpiceLevels(dish || { name, spicyLevel: '' });
-  if (!levels.length) return null;
+  if (!showSpice || !levels.length) return null;
   return <span className="custom-tag">Customizable</span>;
 }
 function SpiceLevels({ dish, name, levels: given }) {
+  const { showSpice } = useMenuFields();
   const levels = given || dishSpiceLevels(dish || { name });
-  if (!levels.length) return null;
+  if (!showSpice || !levels.length) return null;
   return (
     <div className="spice-levels" aria-label={`Spice levels: ${levels.join(', ')}`}>
       {SPICE_LEVELS.filter((l) => levels.includes(l.key)).map((l) => (
@@ -832,6 +875,7 @@ function SpiceRadioGroup({ name, onPick, levels: given, value, onChange }) {
 }
 
 function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle = '' }) {
+  const menuFields = useMenuFields();
   const [burst, setBurst] = useState(null);
   const panelRef = React.useRef(null);
   useEffect(() => {
@@ -867,7 +911,9 @@ function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle 
   const priceText = isGroup
     ? (variant ? `$ ${variant.price}` : `from $ ${dish.fromPrice(gStyle).toFixed(2)}`)
     : `$ ${dish.priceValue}`;
-  const spiceList = isGroup
+  const spiceList = !menuFields.showSpice
+    ? []
+    : isGroup
     ? (parseSpiceText(variant?.item?.spicyLevel).length ? parseSpiceText(variant?.item?.spicyLevel) : (dish.spiceLevels || []))
     : dishSpiceLevels(dish);
   const orderItem = isGroup
@@ -922,7 +968,7 @@ function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle 
           )}
           {isGroup && (
             <OptionRadioGroup
-              label="Protein"
+              label={selectOptionLabel(menuFields.variants?.label)}
               name={`protein-${dish.id}`}
               value={gProtein}
               onChange={setGProtein}
@@ -956,6 +1002,8 @@ function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle 
 }
 
 function DietMark({ veg }) {
+  const { showVegType } = useMenuFields();
+  if (!showVegType) return null;
   const label = veg ? 'Vegetarian' : 'Non-vegetarian';
   return (
     <span className={`diet ${veg ? 'veg' : 'nonveg'}`} title={label} aria-label={label}>
@@ -1027,7 +1075,9 @@ function App() {
     status: menuStatus,
     error: menuError,
     isLive: menuLive,
+    menuConfig,
   } = useRestaurantMenu([]);
+  const menuFields = resolveMenuFields(menuConfig);
   const [heroIndex, setHeroIndex] = useState(0);
   const specialCards = React.useMemo(() => {
     if (specials.length >= 8) return specials;
@@ -1158,6 +1208,7 @@ function App() {
   }, [categoryTabs, activeCategory]);
 
   return (
+    <MenuFieldsContext.Provider value={menuFields}>
     <>
       <a className="skip-link" href="#home">Skip to content</a>
 
@@ -1770,11 +1821,13 @@ function App() {
       />
       <OrderChatWidget
         dishes={dishes}
+        menuConfig={menuConfig}
         onOrderPlaced={showNotice}
         onError={showNotice}
       />
       {notice && <div className="toast" role="status">{notice}</div>}
     </>
+    </MenuFieldsContext.Provider>
   );
 }
 

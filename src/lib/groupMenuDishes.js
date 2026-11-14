@@ -9,10 +9,11 @@ const GROUPED_CATEGORIES = {
   'Cashew Sauce': { base: 'Cashew Sauce', proteinOnly: true, desc: 'Tossed in a rich cashew sauce, made to order.' },
   'Ghee Roast': { base: 'Ghee Roast', proteinOnly: true, desc: 'Roasted in ghee with roast spices, made to order.' },
   'Pepper Fry': { base: 'Pepper Fry', proteinOnly: true, desc: 'Peppery and wok-fried, made to order.' },
+  Pasta: { base: 'Tikka Pasta', proteinOnly: true, desc: 'An Indo-Italian fusion dish that combines pasta with a creamy, spiced Indian tikka masala tomato sauce.' },
 };
 
 const STYLE_ORDER = ['Regular', 'Schezwan', 'Street Style'];
-const PROTEIN_ORDER = ['Veg', 'Gobi', 'Egg', 'Paneer', 'Chicken', 'Fish', 'Shrimp', 'Prawn', 'Lamb', 'Goat'];
+const PROTEIN_ORDER = ['Vegetable', 'Veg', 'Gobi', 'Egg', 'Paneer', 'Chicken', 'Fish', 'Shrimp', 'Prawn', 'Lamb', 'Goat'];
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -22,6 +23,30 @@ function titleCaseWords(value) {
   return String(value || '')
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const PROTEIN_ALIASES = {
+  veg: 'Veg',
+  vegetable: 'Vegetable',
+  vegetables: 'Vegetable',
+  veggie: 'Vegetable',
+  veggies: 'Vegetable',
+  gobi: 'Gobi',
+  egg: 'Egg',
+  paneer: 'Paneer',
+  chicken: 'Chicken',
+  fish: 'Fish',
+  shrimp: 'Shrimp',
+  prawn: 'Prawn',
+  prawns: 'Prawn',
+  lamb: 'Lamb',
+  goat: 'Goat',
+};
+
+function normProtein(raw) {
+  const key = String(raw || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (PROTEIN_ALIASES[key]) return PROTEIN_ALIASES[key];
+  return titleCaseWords(raw);
 }
 
 /** "Veg Veg Manchurian" -> "Veg Manchurian" */
@@ -123,7 +148,7 @@ function groupMenuDishes(list) {
         const re = new RegExp(`^(.*?)\\s+(${escapeRegExp(base)})\\s*$`, 'i');
         const m = n.match(re);
         if (m && m[1].trim()) {
-          const protein = titleCaseWords(m[1].trim());
+          const protein = normProtein(m[1].trim());
           addGroupedVariant(groups, out, d, cfg, protein, '');
           return;
         }
@@ -132,7 +157,7 @@ function groupMenuDishes(list) {
         const m = n.match(re);
         const style = m ? normStyle(m[2]) : '';
         if (m && style && m[1]) {
-          const protein = m[1].trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+          const protein = normProtein(m[1].trim());
           addGroupedVariant(groups, out, d, cfg, protein, style);
           return;
         }
@@ -164,6 +189,7 @@ export {
   collapseDuplicateLeadingWords,
   groupedCategoryConfig,
   groupMenuDishes,
+  normProtein,
   normStyle,
   parseSpiceText,
   variantImage,

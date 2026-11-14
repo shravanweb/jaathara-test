@@ -2955,6 +2955,14 @@ html { scroll-padding-top: 110px; }
 .menu-tabs-wrap .menu-filters button.is-active{background:var(--kumkuma-deep);border-color:var(--kumkuma-deep);color:#fff}
 .menu-tabs-wrap .menu-filters button.is-active .tab-count{background:rgba(255,255,255,.2);color:#fff}
 
+/* Price-list protein picker + style chips */
+.dgp-styles{margin:18px 0 0;padding:14px 0 0;border-top:1px solid rgba(120,60,30,.12)}
+.dgp-prices-block{margin:18px 0 0;padding:14px 0 0;border-top:1px solid rgba(120,60,30,.12)}
+.dgp-styles + .dgp-prices-block{margin-top:10px}
+.dgp-prices-block .dgp-prices{margin:0;border-top:0;padding-top:6px}
+.dgp-opts{grid-template-columns:1fr}
+.dgp-pricebtn:focus-visible,.dgp-chip:focus-visible{outline:2px solid var(--kumkuma-deep);outline-offset:2px}
+
 /* Grouped-card protein image switching */
 .dgp-media img.dgp-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
 .dgp-media img.dgp-photo.is-current{opacity:1;z-index:1}

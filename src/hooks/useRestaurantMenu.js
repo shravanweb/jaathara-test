@@ -13,6 +13,7 @@ export function useRestaurantMenu(fallbackDishes = []) {
   const [items, setItems] = useState(fallbackDishes);
   const [categories, setCategories] = useState([]);
   const [restaurantName, setRestaurantName] = useState('');
+  const [menuConfig, setMenuConfig] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | live | fallback
   const [error, setError] = useState('');
 
@@ -28,6 +29,7 @@ export function useRestaurantMenu(fallbackDishes = []) {
         if (!data.items?.length) {
           setItems(fallbackRef.current);
           setCategories([]);
+          setMenuConfig(null);
           setStatus('fallback');
           setError('No menu items in Restaurant Admin yet — showing sample dishes.');
           return;
@@ -35,11 +37,13 @@ export function useRestaurantMenu(fallbackDishes = []) {
         setItems(data.items);
         setCategories(data.categories || []);
         setRestaurantName(data.restaurantName || '');
+        setMenuConfig(data.menuConfig || null);
         setStatus('live');
       } catch (err) {
         if (cancelled) return;
         setItems(fallbackRef.current);
         setCategories([]);
+        setMenuConfig(null);
         setStatus('fallback');
         setError(err.message || 'Could not load restaurant menu');
       }
@@ -77,6 +81,7 @@ export function useRestaurantMenu(fallbackDishes = []) {
     categoryTabs,
     specials,
     restaurantName,
+    menuConfig,
     status,
     error,
     isLive: status === 'live',

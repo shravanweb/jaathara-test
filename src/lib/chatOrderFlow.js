@@ -6,6 +6,7 @@
 
 import { displayCategoryName, sortCategories } from './categoryOrder.js';
 import { groupMenuDishes, parseSpiceText, normStyle } from './groupMenuDishes.js';
+import { selectOptionLabel } from './optionLabel.js';
 
 export const STEPS = {
   IDLE: 'idle',
@@ -33,7 +34,12 @@ export function createEmptySession() {
     pendingQty: null,
     cart: [],
     guest: { phone: '', name: '', address: '', notes: '' },
+    menuConfig: null,
   };
+}
+
+function spiceEnabled(session) {
+  return !session?.menuConfig || session.menuConfig.showSpice !== false;
 }
 
 function normalize(text) {
@@ -55,7 +61,8 @@ function parseQty(text) {
   return null;
 }
 
-function spiceLevelsFor(item) {
+function spiceLevelsFor(item, session) {
+  if (session && !spiceEnabled(session)) return [];
   if (!item) return [];
   if (item.isGroup && Array.isArray(item.spiceLevels) && item.spiceLevels.length) return item.spiceLevels;
   if (item.spiceLevels?.length) return item.spiceLevels;
@@ -412,10 +419,10 @@ function categoryDishReply(catalog, category) {
   };
 }
 
-function proteinReply(group) {
+function proteinReply(group, session) {
   const from = fromPrice(group);
   return {
-    reply: `${group.name} — starting at ${money(from)}.${group.desc ? `\n${group.desc}` : ''}\n\nChoose a protein:`,
+    reply: `${group.name} - starting at ${money(from)}.${group.desc ? `\n${group.desc}` : ''}\n\n${selectOptionLabel(session?.menuConfig?.variants?.label)}:`,
     actions: proteinActions(group),
     listStyle: 'dishes',
   };
@@ -448,7 +455,7 @@ function afterVariantChosen(session) {
   if (!item) {
     return { session, reply: 'I could not match that option. Please pick again.', actions: proteinActions(session.pendingGroup || { proteins: [] }), listStyle: 'dishes' };
   }
-  const levels = spiceLevelsFor(session.pendingGroup);
+  const levels = spiceLevelsFor(session.pendingGroup, session);
   if (levels.length) {
     session.step = STEPS.SPICE;
     return { session, ...spiceReply(levels, item.name) };
@@ -466,7 +473,7 @@ function beginGroup(session, group, protein, style) {
   const g = session.pendingGroup;
   if (!session.pendingProtein) {
     session.step = STEPS.PROTEIN;
-    return { session, ...proteinReply(g) };
+    return { session, ...proteinReply(g, session) };
   }
   if ((g.styles || []).length && !session.pendingStyle) {
     session.pendingStyle = inferStyle(style, g);
@@ -519,8 +526,9 @@ function beginEntry(session, match, { confirmFirst } = {}) {
 /**
  * @returns {{ session, reply, actions?, listStyle?, readyToSubmit? }}
  */
-export function advanceChatOrder(sessionIn, userText, dishes) {
+export function advanceChatOrder(sessionIn, userText, dishes, menuConfig) {
   const session = structuredClone(sessionIn || createEmptySession());
+  if (menuConfig !== undefined) session.menuConfig = menuConfig;
   const text = String(userText || '').trim();
   const { items: catalog, categories } = prepareChatMenu(dishes);
 
@@ -614,7 +622,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
     if (!protein) {
       const switched = handlePick(false);
       if (switched) return switched;
-      return { session, reply: 'Please pick a protein.', actions: proteinActions(group), listStyle: 'dishes' };
+      return { session, reply: selectOptionLabel(session?.menuConfig?.variants?.label) + '.', actions: proteinActions(group), listStyle: 'dishes' };
     }
     session.pendingProtein = protein;
     if ((group.styles || []).length) {
@@ -650,7 +658,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
   }
 
   if (session.step === STEPS.SPICE) {
-    const levels = spiceLevelsFor(session.pendingGroup || session.pendingItem);
+    const levels = spiceLevelsFor(session.pendingGroup || session.pendingItem, session);
     const spice = parseSpice(text, levels) || (normalize(text).startsWith('spice:') ? '—' : null);
     if (!spice) {
       return { session, reply: 'Please pick a spice level.', actions: spiceActions(levels) };
@@ -684,7 +692,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
     // Grouped dishes already asked spice before qty. Regular dishes ask spice after qty (existing flow).
     if (session.pendingGroup) {
       const item = resolvedCartItem(session);
-      if (!item) return { session, reply: 'Please pick a protein first.', actions: proteinActions(session.pendingGroup), listStyle: 'dishes' };
+      if (!item) return { session, reply: selectOptionLabel(session?.menuConfig?.variants?.label) + ' first.', actions: proteinActions(session.pendingGroup), listStyle: 'dishes' };
       pushCart(session, item, qty, session.pendingSpice || '—');
       session.pendingItem = null;
       session.pendingGroup = null;
@@ -704,7 +712,7 @@ export function advanceChatOrder(sessionIn, userText, dishes) {
     }
 
     session.pendingQty = qty;
-    const levels = spiceLevelsFor(session.pendingItem);
+    const levels = spiceLevelsFor(session.pendingItem, session);
     if (levels.length) {
       session.step = STEPS.SPICE;
       return { session, ...spiceReply(levels, session.pendingItem.name) };
