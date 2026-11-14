@@ -12,6 +12,7 @@ import OrderModal from './components/OrderModal';
 import OrderChatWidget from './components/OrderChatWidget';
 import ReserveModal from './components/ReserveModal';
 import { useRestaurantMenu } from './hooks/useRestaurantMenu';
+import { groupMenuDishes } from './lib/groupMenuDishes';
 import clipBalloon from './assets/Cliparts/balloonseller-animated.svg';
 import clipDappu from './assets/Cliparts/dappumusicians.webp';
 import clipWheel from './assets/Cliparts/giantwheel-animated.svg';
@@ -558,65 +559,6 @@ function TempleBorder({ position = 'top' }) {
   );
 }
 
-// Spice levels from the menu sheet (trial: one dish first)
-// Group option dishes (trial: Fried Rice) into one card with style, protein and spice options
-const GROUPED_CATEGORIES = {
-  'Fried Rice': { base: 'Fried Rice', desc: 'Aromatic rice stir-fried with fresh vegetables and Indo-Chinese flavours.' },
-  // A couple of egg noodle items are named "Egg Fried Rice" in admin, so Noodles also accepts that name.
-  Noodles: { base: 'Hakka Noodles', match: 'Hakka Noodles|Fried Rice', desc: 'Wok-tossed Hakka noodles with crisp vegetables and bold Indo-Chinese sauces.' },
-};
-const STYLE_ORDER = ['Regular', 'Schezwan', 'Street Style'];
-const PROTEIN_ORDER = ['Veg', 'Egg', 'Chicken', 'Shrimp', 'Lamb', 'Goat', 'Paneer'];
-function normStyle(raw) {
-  if (/street/i.test(raw)) return 'Street Style';
-  if (/schez/i.test(raw)) return 'Schezwan';
-  if (/regular/i.test(raw)) return 'Regular';
-  return '';
-}
-function parseSpiceText(text) {
-  return String(text || '').split(',').map((t) => {
-    const v = t.trim().toLowerCase().replace(/\s+/g, ' ');
-    if (v === 'mild') return 'Mild';
-    if (v === 'medium') return 'Medium';
-    if (v === 'spicy' || v === 'hot') return 'Spicy';
-    if (v.startsWith('extra')) return 'Extra Spicy';
-    return '';
-  }).filter(Boolean);
-}
-function groupMenuDishes(list) {
-  const out = [];
-  const groups = {};
-  list.forEach((d) => {
-    const cfg = GROUPED_CATEGORIES[d.category];
-    if (cfg) {
-      const n = String(d.name || '').replace(/\s+/g, ' ').trim();
-      const re = new RegExp(`^(.*?)\\s*(?:${cfg.match || cfg.base})\\s*[–—-]?\\s*(.*)$`, 'i');
-      const m = n.match(re);
-      const style = m ? normStyle(m[2]) : '';
-      if (m && style && m[1]) {
-        const protein = m[1].trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-        let g = groups[d.category];
-        if (!g) {
-          g = { isGroup: true, id: `group-${d.category}`, name: cfg.base, category: d.category, desc: cfg.desc, image: '', variants: [], spiceLevels: [] };
-          groups[d.category] = g;
-          out.push(g);
-        }
-        if (!g.image && d.image) g.image = d.image;
-        if (!g.spiceLevels.length) g.spiceLevels = parseSpiceText(d.spicyLevel);
-        g.variants.push({ protein, style, price: d.priceValue, veg: d.veg, item: d });
-        return;
-      }
-    }
-    out.push(d);
-  });
-  Object.values(groups).forEach((g) => {
-    const ord = (arr, order) => [...new Set(arr)].sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
-    g.styles = ord(g.variants.map((v) => v.style), STYLE_ORDER);
-    g.proteins = ord(g.variants.map((v) => v.protein), PROTEIN_ORDER);
-    g.fromPrice = (style) => Math.min(...g.variants.filter((v) => !style || v.style === style).map((v) => v.price));
-  });
-  return out;
-}
 function SpiceInline({ level }) {
   const l = SPICE_LEVELS.find((x) => x.key === level);
   const c = l ? l.chillies : 1;
@@ -627,18 +569,76 @@ function SpiceInline({ level }) {
     </span>
   );
 }
+function FadePhoto({ src, alt = '', className = '' }) {
+  const [current, setCurrent] = useState(src);
+  const [previous, setPrevious] = useState('');
+  useEffect(() => {
+    if (src === current) return undefined;
+    setPrevious(current);
+    setCurrent(src);
+    return undefined;
+  }, [src, current]);
+  if (!current && !previous) return null;
+  return (
+    <>
+      {previous && previous !== current ? (
+        <img src={previous} alt="" className={`${className} is-prev`} aria-hidden="true" />
+      ) : null}
+      {current ? <img src={current} alt={alt} className={`${className} is-current`} /> : null}
+    </>
+  );
+}
 function DishGroupCard({ group, onOpen }) {
+  const startProtein = (typeof group.defaultProtein === 'function' ? group.defaultProtein() : group.defaultProtein) || group.proteins[0] || '';
+  const startStyle = (() => {
+    if (!group.styles.length) return '';
+    const byImg = group.variants.find((v) => v.protein === startProtein && v.style && v.image)
+      || group.variants.find((v) => v.protein === startProtein && v.style)
+      || group.variants.find((v) => v.style);
+    return (byImg && byImg.style) || group.styles[0] || '';
+  })();
+  const [protein, setProtein] = useState(startProtein);
+  const [style, setStyle] = useState(startStyle);
+  const hasStyles = group.styles.length > 0;
+  const photo = group.imageFor ? group.imageFor(protein, style) : group.image;
+  const proteinThumbs = group.proteins
+    .map((pr) => ({ protein: pr, image: group.imageFor ? group.imageFor(pr) : '' }))
+    .filter((t) => t.image);
+  const showDots = new Set(proteinThumbs.map((t) => t.image)).size > 1;
+  const open = () => onOpen({ protein, style });
+  const pickProtein = (event, next) => {
+    event.stopPropagation();
+    setProtein(next);
+  };
+  const pickStyle = (event, next) => {
+    event.stopPropagation();
+    setStyle(next);
+  };
   return (
     <article
       className="dish-group pro"
       role="button"
       tabIndex={0}
-      onClick={onOpen}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } }}
+      onClick={open}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } }}
     >
-      <div className={`dgp-media${group.image ? '' : ' is-placeholder'}`}>
-        {group.image ? <img src={group.image} alt={group.name} /> : <span className="thumb-lotus" aria-hidden="true" />}
-        <span className="dgp-tag">{group.styles.length} styles · {group.proteins.length} proteins</span>
+      <div className={`dgp-media${photo ? '' : ' is-placeholder'}`}>
+        {photo ? <FadePhoto src={photo} alt={`${protein ? `${protein} ` : ''}${group.name}`} className="dgp-photo" /> : <span className="thumb-lotus" aria-hidden="true" />}
+        <span className="dgp-tag">{hasStyles ? `${group.styles.length} styles · ${group.proteins.length} proteins` : `${group.proteins.length} proteins`}</span>
+        {showDots ? (
+          <div className="dgp-dots" role="tablist" aria-label="Protein photos">
+            {proteinThumbs.map((t) => (
+              <button
+                key={t.protein}
+                type="button"
+                className={`dgp-dot${protein === t.protein ? ' is-selected' : ''}`}
+                aria-label={`Show ${t.protein}`}
+                onClick={(e) => pickProtein(e, t.protein)}
+                onMouseEnter={() => setProtein(t.protein)}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
       <div className="dgp-body">
         <span className="dgp-eyebrow">Indo-Chinese · Made to order</span>
@@ -648,18 +648,42 @@ function DishGroupCard({ group, onOpen }) {
         </div>
         <p className="dgp-desc">{group.desc}</p>
         <ul className="dgp-prices">
-          {group.styles.map((st) => (
-            <li key={st}>
-              <span className="dgp-pname">{st}</span>
-              <span className="dgp-leader" aria-hidden="true" />
-              <span className="dgp-pval">${group.fromPrice(st).toFixed(2)}</span>
-            </li>
-          ))}
+          {(hasStyles ? group.styles : group.proteins).map((row) => {
+            const isStyle = hasStyles;
+            const price = isStyle ? group.fromPrice(row) : group.priceForProtein(row);
+            const selected = isStyle ? style === row : protein === row;
+            return (
+              <li key={row}>
+                <button
+                  type="button"
+                  className={`dgp-pricebtn${selected ? ' is-selected' : ''}`}
+                  onClick={(e) => (isStyle ? pickStyle(e, row) : pickProtein(e, row))}
+                  onMouseEnter={() => (isStyle ? setStyle(row) : setProtein(row))}
+                >
+                  <span className="dgp-pname">{row}</span>
+                  <span className="dgp-leader" aria-hidden="true" />
+                  <span className="dgp-pval">${Number(price).toFixed(2)}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
         <div className="dgp-opts">
           <div className="dgp-opt">
             <span className="dgp-label">Protein</span>
-            <div className="dgp-chips">{group.proteins.map((pr) => <span className="dgp-chip" key={pr}>{pr}</span>)}</div>
+            <div className="dgp-chips">
+              {group.proteins.map((pr) => (
+                <button
+                  type="button"
+                  className={`dgp-chip${protein === pr ? ' is-selected' : ''}`}
+                  key={pr}
+                  onClick={(e) => pickProtein(e, pr)}
+                  onMouseEnter={() => setProtein(pr)}
+                >
+                  {pr}
+                </button>
+              ))}
+            </div>
           </div>
           {group.spiceLevels.length > 0 && (
             <div className="dgp-opt">
@@ -668,7 +692,7 @@ function DishGroupCard({ group, onOpen }) {
             </div>
           )}
         </div>
-        <span className="dgp-cta"><ShoppingBag size={15} /> Customize &amp; order</span>
+        <button type="button" className="dgp-cta" onClick={(e) => { e.stopPropagation(); open(); }}><ShoppingBag size={15} /> Customize &amp; order</button>
       </div>
     </article>
   );
@@ -797,7 +821,7 @@ function SpiceRadioGroup({ name, onPick, levels: given }) {
   );
 }
 
-function DishDialog({ dish, onClose, onOrder }) {
+function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle = '' }) {
   const [burst, setBurst] = useState(null);
   const panelRef = React.useRef(null);
   useEffect(() => {
@@ -815,7 +839,7 @@ function DishDialog({ dish, onClose, onOrder }) {
   };
   const [gStyle, setGStyle] = useState('');
   const [gProtein, setGProtein] = useState('');
-  useEffect(() => { setBurst(null); setGStyle(''); setGProtein(''); }, [dish]);
+  useEffect(() => { setBurst(null); setGStyle(initialStyle || ''); setGProtein(initialProtein || ''); }, [dish, initialProtein, initialStyle]);
   useEffect(() => {
     if (!dish) return undefined;
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -826,7 +850,9 @@ function DishDialog({ dish, onClose, onOrder }) {
   }, [dish, onClose]);
   if (!dish) return null;
   const isGroup = Boolean(dish.isGroup);
-  const variant = isGroup ? dish.variants.find((v) => v.style === gStyle && v.protein === gProtein) : null;
+  const variant = isGroup
+    ? dish.variants.find((v) => v.protein === gProtein && (dish.styles.length === 0 || v.style === gStyle))
+    : null;
   const priceText = isGroup
     ? (variant ? `$ ${variant.price}` : `from $ ${dish.fromPrice(gStyle).toFixed(2)}`)
     : `$ ${dish.priceValue}`;
@@ -837,8 +863,14 @@ function DishDialog({ dish, onClose, onOrder }) {
         <button type="button" className="modal-close dish-dialog-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
         <ChilliBreak burst={burst} />
         <div className="dish-dialog-scroll">
-        <div className={`dish-dialog-media${dish.image ? '' : ' is-placeholder'}`}>
-          {dish.image ? <img src={dish.image} alt={dish.name} /> : <span className="thumb-lotus" aria-hidden="true" />}
+        <div className={`dish-dialog-media${(isGroup ? (variant?.image || dish.imageFor?.(gProtein, gStyle) || dish.image) : dish.image) ? '' : ' is-placeholder'}`}>
+          {(isGroup ? (variant?.image || dish.imageFor?.(gProtein, gStyle) || dish.image) : dish.image) ? (
+            <FadePhoto
+              src={isGroup ? (variant?.image || dish.imageFor?.(gProtein, gStyle) || dish.image) : dish.image}
+              alt={dish.name}
+              className="dish-dialog-photo"
+            />
+          ) : <span className="thumb-lotus" aria-hidden="true" />}
         </div>
         <div className="dish-dialog-body">
           {dish.category && <span className="dish-dialog-cat">{dish.category}</span>}
@@ -848,7 +880,7 @@ function DishDialog({ dish, onClose, onOrder }) {
             <p className="dish-dialog-price">{priceText}</p>
           </div>
           {(dish.desc || dish.description) && <p className="dish-dialog-desc">{dish.desc || dish.description}</p>}
-          {isGroup && (
+          {isGroup && dish.styles.length > 0 && (
             <OptionRadioGroup
               label="Style"
               name={`style-${dish.id}`}
@@ -1412,7 +1444,7 @@ function App() {
             )}
             <div className="menu-list">
               {groupMenuDishes(visibleDishes).map((dish) => dish.isGroup ? (
-                <DishGroupCard key={dish.id} group={dish} onOpen={() => setSelectedDish(dish)} />
+                <DishGroupCard key={dish.id} group={dish} onOpen={(pick) => setSelectedDish({ dish, pick })} />
               ) : (
                 <article
                   className="dish dish-clickable"
@@ -1672,7 +1704,9 @@ function App() {
         </div>
       </footer>
       <DishDialog
-        dish={selectedDish}
+        dish={selectedDish?.dish || selectedDish}
+        initialProtein={selectedDish?.pick?.protein || ''}
+        initialStyle={selectedDish?.pick?.style || ''}
         onClose={() => setSelectedDish(null)}
         onOrder={() => { setSelectedDish(null); openOrder(); }}
       />
