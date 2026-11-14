@@ -558,6 +558,172 @@ function TempleBorder({ position = 'top' }) {
   );
 }
 
+// Spice levels from the menu sheet (trial: one dish first)
+const SPICE_LEVELS = [
+  { key: 'Mild', chillies: 1 },
+  { key: 'Medium', chillies: 2 },
+  { key: 'Spicy', chillies: 3 },
+  { key: 'Extra Spicy', chillies: 4 },
+];
+const DISH_SPICE = {
+  'butter chicken': ['Mild', 'Medium', 'Spicy', 'Extra Spicy'],
+};
+function dishSpiceLevels(name) {
+  return DISH_SPICE[String(name || '').trim().toLowerCase()] || null;
+}
+function CustomizableTag({ name }) {
+  if (!dishSpiceLevels(name)) return null;
+  return <span className="custom-tag">Customizable</span>;
+}
+function SpiceLevels({ name }) {
+  const levels = DISH_SPICE[String(name || '').trim().toLowerCase()];
+  if (!levels) return null;
+  return (
+    <div className="spice-levels" aria-label={`Spice levels: ${levels.join(', ')}`}>
+      {SPICE_LEVELS.filter((l) => levels.includes(l.key)).map((l) => (
+        <span className="spice-chip" key={l.key} title={l.key}>
+          <span className="spice-chillies" aria-hidden="true">{'🌶️'.repeat(l.chillies)}</span>
+          {l.key}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const LEVEL_CHILLIES = { Mild: 1, Medium: 2, Spicy: 3, 'Extra Spicy': 4 }; // pieces that break
+function ChilliBreak({ burst }) {
+  const parts = React.useMemo(() => {
+    if (!burst) return null;
+    const n = LEVEL_CHILLIES[burst.level] || 1;
+    const chillies = Array.from({ length: n }).map((_, i) => ({
+      x: burst.x + (i - (n - 1) / 2) * 34,
+      y: burst.y,
+      delay: i * 0.12,
+      tilt: (Math.random() - 0.5) * 40,
+      key: `${burst.id}-c${i}`,
+    }));
+    const bits = [];
+    chillies.forEach((c) => {
+      const count = 10 + n * 4;
+      for (let j = 0; j < count; j += 1) {
+        const seed = true;
+        bits.push({
+          x: c.x,
+          y: c.y,
+          dx: (Math.random() - 0.5) * 2 * (28 + n * 10),
+          dy: -(6 + Math.random() * 26),
+          size: 6 + Math.random() * 3,
+          seed,
+          rot: Math.random() * 360,
+          delay: c.delay + 0.3 + Math.random() * 0.18,
+          key: `${c.key}-b${j}`,
+        });
+      }
+    });
+    return { chillies, bits };
+  }, [burst]);
+  if (!parts) return null;
+  return (
+    <div className="chilli-break" aria-hidden="true">
+      {parts.chillies.map((c) => (
+        <span key={c.key} className="cb-chilli" style={{ left: c.x, top: c.y, '--tilt': `${c.tilt}deg`, animationDelay: `${c.delay}s` }}>
+          <span className="cb-half cb-left" style={{ animationDelay: `${c.delay + 0.3}s` }}>🌶️</span>
+          <span className="cb-half cb-right" style={{ animationDelay: `${c.delay + 0.3}s` }}>🌶️</span>
+        </span>
+      ))}
+      {parts.bits.map((b) => (
+        <span
+          key={b.key}
+          className={`cb-bit ${b.seed ? 'is-seed' : 'is-flake'}`}
+          style={{ left: b.x, top: b.y, width: b.size, height: b.size * 0.85, '--dx': `${b.dx}px`, '--dy': `${b.dy}px`, '--r': `${b.rot}deg`, animationDelay: `${b.delay}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SpiceRadioGroup({ name, onPick }) {
+  const levels = dishSpiceLevels(name) || [];
+  const [picked, setPicked] = useState('');
+  const group = `spice-${String(name || '').replace(/\W+/g, '-').toLowerCase()}`;
+  return (
+    <div className="spice-radio-group" role="radiogroup" aria-label="Spice level">
+      {SPICE_LEVELS.filter((l) => levels.includes(l.key)).map((l) => (
+        <label key={l.key} className={`spice-radio${picked === l.key ? ' is-checked' : ''}`}>
+          <input type="radio" name={group} value={l.key} checked={picked === l.key} onChange={(e) => { setPicked(l.key); if (onPick) onPick(l.key, e.currentTarget.closest('label')); }} />
+          <span className="spice-radio-dot" aria-hidden="true" />
+          <span className="spice-radio-label">{l.key}</span>
+          <span className="spice-radio-chillies" aria-hidden="true">
+            {Array.from({ length: Math.min(l.chillies, 2) }).map((_, i) => (
+              <span className="chilli" key={i}>🌶️</span>
+            ))}
+            {l.chillies > 2 && <span className="chilli-plus">{l.key === 'Extra Spicy' ? '++' : '+'}</span>}
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function DishDialog({ dish, onClose, onOrder }) {
+  const [burst, setBurst] = useState(null);
+  const panelRef = React.useRef(null);
+  useEffect(() => {
+    if (!burst) return undefined;
+    const t = setTimeout(() => setBurst(null), 2200);
+    return () => clearTimeout(t);
+  }, [burst]);
+  const breakChilli = (level, el) => {
+    const panel = panelRef.current;
+    if (!panel || !el) return;
+    const pr = panel.getBoundingClientRect();
+    const target = el.querySelector('.spice-radio-chillies') || el;
+    const r = target.getBoundingClientRect();
+    setBurst({ id: Date.now(), level, x: r.left - pr.left + r.width / 2, y: r.top - pr.top + r.height / 2 });
+  };
+  useEffect(() => { setBurst(null); }, [dish]);
+  useEffect(() => {
+    if (!dish) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [dish, onClose]);
+  if (!dish) return null;
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div ref={panelRef} className="modal-panel dish-dialog" role="dialog" aria-modal="true" aria-label={dish.name} onClick={(e) => e.stopPropagation()}>
+        <button type="button" className="modal-close dish-dialog-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
+        <ChilliBreak burst={burst} />
+        <div className="dish-dialog-scroll">
+        <div className={`dish-dialog-media${dish.image ? '' : ' is-placeholder'}`}>
+          {dish.image ? <img src={dish.image} alt={dish.name} /> : <span className="thumb-lotus" aria-hidden="true" />}
+        </div>
+        <div className="dish-dialog-body">
+          {dish.category && <span className="dish-dialog-cat">{dish.category}</span>}
+          <div className="dish-dialog-title">
+            <DietMark veg={dish.veg} />
+            <h2>{dish.name}</h2>
+          </div>
+          <p className="dish-dialog-price">$ {dish.priceValue}</p>
+          {(dish.desc || dish.description) && <p className="dish-dialog-desc">{dish.desc || dish.description}</p>}
+          {dishSpiceLevels(dish.name) && (
+            <div className="dish-dialog-spice">
+              <h3>Spice level</h3>
+              <SpiceRadioGroup key={dish.name} name={dish.name} onPick={breakChilli} />
+            </div>
+          )}
+          <button type="button" className="dish-dialog-order" onClick={onOrder}>
+            <ShoppingBag size={16} /> Order now
+          </button>
+        </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DietMark({ veg }) {
   const label = veg ? 'Vegetarian' : 'Non-vegetarian';
   return (
@@ -610,6 +776,7 @@ function App() {
   const [scrolled, setScrolled] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
+  const [selectedDish, setSelectedDish] = useState(null);
   const {
     dishes,
     categoryTabs,
@@ -1052,7 +1219,14 @@ function App() {
             )}
             <div className="menu-list">
               {visibleDishes.map((dish) => (
-                <article className="dish" key={dish.id || dish.name}>
+                <article
+                  className="dish dish-clickable"
+                  key={dish.id || dish.name}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedDish(dish)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedDish(dish); } }}
+                >
                   <div className={`dish-thumb${dish.image ? '' : ' is-placeholder'}`}>
                     {dish.image ? <img src={dish.image} alt="" /> : <span className="thumb-lotus" aria-hidden="true" />}
                   </div>
@@ -1066,6 +1240,7 @@ function App() {
                       </span>
                     </div>
                     <p>{dish.desc || dish.description}</p>
+                    <CustomizableTag name={dish.name} />
                   </div>
                 </article>
               ))}
@@ -1310,6 +1485,11 @@ function App() {
           </div>
         </div>
       </footer>
+      <DishDialog
+        dish={selectedDish}
+        onClose={() => setSelectedDish(null)}
+        onOrder={() => { setSelectedDish(null); openOrder(); }}
+      />
       <OrderModal
         open={orderOpen}
         onClose={() => setOrderOpen(false)}
