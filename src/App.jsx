@@ -98,7 +98,7 @@ const feastItems = [
 ];
 
 const reviews = [
-  { initials: 'RK', name: 'Ramesh K.', text: 'The muggulu at the door and the biryani on the table — it felt like walking into a Telangana jathara.' },
+  { initials: 'RK', name: 'Ramesh K.', text: 'The muggulu at the door and the biryani on the table. It felt like walking into a Telangana jathara.' },
   { initials: 'PM', name: 'Priya M.', text: 'Loved the gongura and the tandoori starters. Service was warm, portions generous, colours everywhere.' }
 ];
 
@@ -1322,8 +1322,8 @@ function App() {
                 fresh ingredients, and a passion for great food.
               </p>
               <p className="about-aside">
-                A Telangana jathara of pasupu, kumkuma and authentic flavours — a hall dressed for celebration,
-                and a kitchen that cooks as if the fair were in full swing.
+                A celebration of authentic flavours from across India, with a welcoming space for every occasion
+                and a kitchen serving regional favourites with care.
               </p>
               <button className="btn btn-red" onClick={() => goTo('contact')}>
                 Know More <ArrowRight size={16} />
@@ -1461,7 +1461,6 @@ function App() {
                     <DietMark veg={item.veg} />
                   </div>
                   <h3>{item.name}</h3>
-                  <p>{item.note}</p>
                   <span className="dish-price special-price">
                     <span className="price-value">$ {item.priceValue}</span>
                   </span>
@@ -1563,7 +1562,7 @@ function App() {
             <div className="cta-card cta-order" data-reveal style={{ '--cta-bg': `url(${heroMain})` }}>
               <span className="eyebrow">The jathara, at home</span>
               <h2>Takeaway &amp; <em>Delivery</em></h2>
-              <p>Enjoy the jathara at home {'\u2014'} biryani, curries and festival sweets, packed fresh from our kitchen.</p>
+              <p>Enjoy the jathara at home: biryani, curries and festival sweets, packed fresh from our kitchen.</p>
               <ul className="cta-tags">
                 <li>Biryani</li>
                 <li>Curries</li>
@@ -1580,7 +1579,7 @@ function App() {
             <div className="cta-card cta-reserve" data-reveal="right">
               <span className="eyebrow">A seat at the feast</span>
               <h2>Reserve a <em>Table</em></h2>
-              <p>Family meals, celebrations and catering for gatherings {'\u2014'} book an evening at Jaathara.</p>
+              <p>Family meals, celebrations and catering for gatherings. Book an evening at Jaathara.</p>
               <ul className="cta-info">
                 <li><span className="cta-ico"><Phone size={16} /></span><div><small>Call us</small><a href="tel:+13856148117">+1 (385) 614-8117</a></div></li>
                 <li><span className="cta-ico"><Clock3 size={16} /></span><div><small>Open daily</small><b>11:00 AM {'\u2013'} 11:00 PM</b></div></li>
