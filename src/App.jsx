@@ -208,10 +208,16 @@ function LotusRule({ light = false }) {
   return (
     <div className={`lotus-rule ${light ? 'light' : ''}`} aria-hidden="true">
       <span />
-      <svg viewBox="0 0 56 28" fill="currentColor">
-        <path d="M28 26c-3-8-12-11-18-8 6-10 12-14 18-18 6 4 12 8 18 18-6-3-15 0-18 8z" opacity="0.95" />
-        <path d="M28 26c0-10-5-16 0-24 5 8 0 14 0 24z" />
-        <path d="M16 20c4-2 8-2 12 2 4-4 8-4 12-2-6-8-12-10-12-10s-6 2-12 10z" opacity="0.75" />
+      <svg className="kolam-mark" viewBox="-215 -215 430 430" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+          <g key={a} transform={`rotate(${a})`}>
+            <path d="M -35 -67 L -30 -125 L 0 -175 L 30 -125 L 35 -67" strokeWidth="16" />
+            <path d="M -20 -31 C -33 -51 -26 -78 0 -90 C 26 -78 33 -51 20 -31" strokeWidth="13" />
+            <circle cx="0" cy="-196" r="13" fill="currentColor" stroke="none" />
+          </g>
+        ))}
+        <circle cx="0" cy="0" r="22" strokeWidth="14" />
+        <circle cx="0" cy="0" r="6" fill="currentColor" stroke="none" />
       </svg>
       <span />
     </div>
