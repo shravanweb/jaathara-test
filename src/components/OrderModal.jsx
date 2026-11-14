@@ -1,40 +1,67 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LoaderCircle, Minus, Plus, Search, ShoppingBag, Trash2, X } from 'lucide-react';
 import { createOrder } from '../lib/restaurantApi';
+import { parseSpiceText } from '../lib/groupMenuDishes';
 
-export default function OrderModal({ open, onClose, onSuccess, onError, dishes }) {
+function lineKey(item) {
+  const spice = item.spicyLevel && item.spicyLevel !== '—' ? item.spicyLevel : '';
+  return `${item.id || item.name}::${spice}`;
+}
+
+function defaultSpice(dish) {
+  const levels = parseSpiceText(dish?.spicyLevel);
+  return levels[0] || '';
+}
+
+export default function OrderModal({ open, onClose, onSuccess, onError, dishes, prefill, onPrefillConsumed }) {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [notes, setNotes] = useState('');
-  const [qtyByName, setQtyByName] = useState({});
+  const [lines, setLines] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
   const [dishQuery, setDishQuery] = useState('');
+  const consumedPrefill = useRef(null);
 
   const orderable = useMemo(
     () =>
       (dishes || []).filter(
-        (d) => Number(d.priceValue) > 0 && d.available !== false
+        (d) => Number(d.priceValue) > 0 && d.available !== false && !d.isGroup
       ),
     [dishes]
   );
 
-  const lineItems = useMemo(
-    () =>
-      orderable
-        .map((dish) => {
-          const qty = Number(qtyByName[dish.name] || 0);
-          if (qty < 1) return null;
-          return {
-            name: dish.name,
-            qty,
-            price: Number(dish.priceValue),
-          };
-        })
-        .filter(Boolean),
-    [orderable, qtyByName]
-  );
+  const addLine = (item) => {
+    const spicyLevel = item.spicyLevel && item.spicyLevel !== '—' ? item.spicyLevel : (item.spicyLevel === '—' ? '' : item.spicyLevel);
+    const normalized = {
+      id: item.id,
+      name: item.name,
+      price: Number(item.priceValue ?? item.price) || 0,
+      qty: Math.max(1, Math.min(20, Number(item.qty) || 1)),
+      spicyLevel: spicyLevel || '',
+    };
+    const key = lineKey(normalized);
+    setLines((prev) => {
+      const existing = prev.find((l) => l.key === key);
+      if (existing) {
+        return prev.map((l) => (l.key === key ? { ...l, qty: Math.min(20, l.qty + normalized.qty) } : l));
+      }
+      return [...prev, { ...normalized, key }];
+    });
+  };
+
+  useEffect(() => {
+    if (!open || !prefill || !prefill.name) return undefined;
+    const stamp = prefill._t || `${prefill.id || prefill.name}:${prefill.spicyLevel || ''}:${prefill.qty || 1}`;
+    if (consumedPrefill.current === stamp) return undefined;
+    consumedPrefill.current = stamp;
+    addLine(prefill);
+    onPrefillConsumed?.();
+    return undefined;
+  }, [open, prefill]);
+
+  const lineItems = lines.filter((l) => l.qty > 0);
 
   const query = dishQuery.trim().toLowerCase();
   const suggestions = query
@@ -43,7 +70,13 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
         .slice(0, 8)
     : [];
   const pickDish = (dish) => {
-    setQtyByName((prev) => ({ ...prev, [dish.name]: Math.max(1, Number(prev[dish.name] || 0)) }));
+    addLine({
+      id: dish.id,
+      name: dish.name,
+      priceValue: dish.priceValue,
+      qty: 1,
+      spicyLevel: defaultSpice(dish),
+    });
     setDishQuery('');
   };
 
@@ -51,11 +84,12 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
 
   if (!open) return null;
 
-  const setQty = (name, next) => {
-    setQtyByName((prev) => ({
-      ...prev,
-      [name]: Math.max(0, Math.min(20, next)),
-    }));
+  const setQty = (key, next) => {
+    const qty = Math.max(0, Math.min(20, next));
+    setLines((prev) => {
+      if (qty < 1) return prev.filter((l) => l.key !== key);
+      return prev.map((l) => (l.key === key ? { ...l, qty } : l));
+    });
   };
 
   const submit = async (event) => {
@@ -73,14 +107,21 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
         customerPhone: customerPhone.trim(),
         customerAddress: customerAddress.trim(),
         notes: notes.trim(),
-        lineItems,
+        lineItems: lineItems.map((l) => ({
+          menuItemId: l.id || undefined,
+          id: l.id || undefined,
+          name: l.name,
+          qty: l.qty,
+          price: l.price,
+          spicyLevel: l.spicyLevel || undefined,
+        })),
       });
       onSuccess?.(
         result.code
           ? `Order placed · ${result.code}`
           : 'Order placed — check Restaurant Admin → Orders'
       );
-      setQtyByName({});
+      setLines([]);
       onClose?.();
     } catch (err) {
       const message = err.message || 'Order failed';
@@ -135,7 +176,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
             {query && (
               <ul className="order-suggestions" role="listbox">
                 {suggestions.length ? suggestions.map((dish) => (
-                  <li key={dish.name}>
+                  <li key={dish.id || dish.name}>
                     <button type="button" onClick={() => pickDish(dish)}>
                       <span>
                         <strong>{dish.name}</strong>
@@ -151,17 +192,18 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
             {lineItems.length > 0 ? (
               <div className="order-dish-list order-cart">
                 {lineItems.map((li) => (
-                  <div className="order-dish-row" key={li.name}>
+                  <div className="order-dish-row" key={li.key}>
                     <div>
                       <strong>{li.name}</strong>
+                      {li.spicyLevel ? <span className="order-line-spice">{li.spicyLevel}</span> : null}
                       <span>$ {(li.price * li.qty).toFixed(2)}</span>
                     </div>
                     <div className="qty-controls">
-                      <button type="button" aria-label={`Fewer ${li.name}`} onClick={() => setQty(li.name, li.qty - 1)}>
+                      <button type="button" aria-label={`Fewer ${li.name}`} onClick={() => setQty(li.key, li.qty - 1)}>
                         {li.qty === 1 ? <Trash2 size={13} /> : <Minus size={14} />}
                       </button>
                       <span>{li.qty}</span>
-                      <button type="button" aria-label={`More ${li.name}`} onClick={() => setQty(li.name, li.qty + 1)}>
+                      <button type="button" aria-label={`More ${li.name}`} onClick={() => setQty(li.key, li.qty + 1)}>
                         <Plus size={14} />
                       </button>
                     </div>
@@ -208,7 +250,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes }
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Spice level, allergies…"
+              placeholder="Allergies, delivery instructions…"
             />
           </label>
 

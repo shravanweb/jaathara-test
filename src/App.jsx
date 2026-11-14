@@ -5,7 +5,7 @@ import {
   Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music, Search, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
-import gulabJamun from './assets/gulab-jamun.png';
+import gulabJamun from './assets/gulab-jamun1.jpg';
 import heroMain from './assets/hero-main.webp';
 import satTandoori from './assets/sat-tandoori.jpg';
 import OrderModal from './components/OrderModal';
@@ -13,7 +13,7 @@ import OrderChatWidget from './components/OrderChatWidget';
 import ReserveModal from './components/ReserveModal';
 import { useRestaurantMenu } from './hooks/useRestaurantMenu';
 import { displayCategoryName } from './lib/categoryOrder';
-import { groupMenuDishes } from './lib/groupMenuDishes';
+import { groupMenuDishes, parseSpiceText } from './lib/groupMenuDishes';
 import clipBalloon from './assets/Cliparts/balloonseller-animated.svg';
 import clipDappu from './assets/Cliparts/dappumusicians.webp';
 import clipWheel from './assets/Cliparts/giantwheel-animated.svg';
@@ -722,19 +722,21 @@ const SPICE_LEVELS = [
   { key: 'Spicy', chillies: 3 },
   { key: 'Extra Spicy', chillies: 4 },
 ];
-const DISH_SPICE = {
-  'butter chicken': ['Mild', 'Medium', 'Spicy', 'Extra Spicy'],
-};
-function dishSpiceLevels(name) {
-  return DISH_SPICE[String(name || '').trim().toLowerCase()] || null;
+function dishSpiceLevels(dish) {
+  if (!dish) return [];
+  if (Array.isArray(dish.spiceLevels) && dish.spiceLevels.length) return dish.spiceLevels;
+  const fromVariant = dish.item ? parseSpiceText(dish.item.spicyLevel) : [];
+  if (fromVariant.length) return fromVariant;
+  return parseSpiceText(dish.spicyLevel);
 }
-function CustomizableTag({ name }) {
-  if (!dishSpiceLevels(name)) return null;
+function CustomizableTag({ dish, name }) {
+  const levels = dishSpiceLevels(dish || { name, spicyLevel: '' });
+  if (!levels.length) return null;
   return <span className="custom-tag">Customizable</span>;
 }
-function SpiceLevels({ name }) {
-  const levels = DISH_SPICE[String(name || '').trim().toLowerCase()];
-  if (!levels) return null;
+function SpiceLevels({ dish, name, levels: given }) {
+  const levels = given || dishSpiceLevels(dish || { name });
+  if (!levels.length) return null;
   return (
     <div className="spice-levels" aria-label={`Spice levels: ${levels.join(', ')}`}>
       {SPICE_LEVELS.filter((l) => levels.includes(l.key)).map((l) => (
@@ -799,13 +801,20 @@ function ChilliBreak({ burst }) {
   );
 }
 
-function SpiceRadioGroup({ name, onPick, levels: given }) {
-  const levels = given || dishSpiceLevels(name) || [];
-  const [picked, setPicked] = useState('');
+function SpiceRadioGroup({ name, onPick, levels: given, value, onChange }) {
+  const levels = given || dishSpiceLevels({ name }) || [];
+  const opts = levels.map((key) => SPICE_LEVELS.find((l) => l.key === key) || { key, chillies: 1 });
+  const [uncontrolled, setUncontrolled] = useState(levels[0] || '');
+  const picked = value !== undefined ? value : uncontrolled;
+  const setPicked = (key) => {
+    if (value === undefined) setUncontrolled(key);
+    if (onChange) onChange(key);
+  };
   const group = `spice-${String(name || '').replace(/\W+/g, '-').toLowerCase()}`;
+  if (!opts.length) return null;
   return (
-    <div className="spice-radio-group" role="radiogroup" aria-label="Spice level">
-      {SPICE_LEVELS.filter((l) => levels.includes(l.key)).map((l) => (
+    <div className="spice-radio-group" role="radiogroup" aria-label="Spice level" aria-required="true">
+      {opts.map((l) => (
         <label key={l.key} className={`spice-radio${picked === l.key ? ' is-checked' : ''}`}>
           <input type="radio" name={group} value={l.key} checked={picked === l.key} onChange={(e) => { setPicked(l.key); if (onPick) onPick(l.key, e.currentTarget.closest('label')); }} />
           <span className="spice-radio-dot" aria-hidden="true" />
@@ -840,6 +849,7 @@ function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle 
   };
   const [gStyle, setGStyle] = useState('');
   const [gProtein, setGProtein] = useState('');
+  const [spice, setSpice] = useState('');
   useEffect(() => { setBurst(null); setGStyle(initialStyle || ''); setGProtein(initialProtein || ''); }, [dish, initialProtein, initialStyle]);
   useEffect(() => {
     if (!dish) return undefined;
@@ -857,7 +867,27 @@ function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle 
   const priceText = isGroup
     ? (variant ? `$ ${variant.price}` : `from $ ${dish.fromPrice(gStyle).toFixed(2)}`)
     : `$ ${dish.priceValue}`;
-  const spiceList = isGroup ? dish.spiceLevels : dishSpiceLevels(dish.name);
+  const spiceList = isGroup
+    ? (parseSpiceText(variant?.item?.spicyLevel).length ? parseSpiceText(variant?.item?.spicyLevel) : (dish.spiceLevels || []))
+    : dishSpiceLevels(dish);
+  const orderItem = isGroup
+    ? {
+        id: variant?.item?.id || dish.id,
+        name: variant?.item?.name || (variant ? `${variant.protein} ${dish.name}` : dish.name),
+        price: variant ? Number(variant.price) : Number(dish.fromPrice?.(gStyle) || 0),
+        priceValue: variant ? Number(variant.price) : Number(dish.fromPrice?.(gStyle) || 0),
+      }
+    : { id: dish.id, name: dish.name, price: Number(dish.priceValue), priceValue: Number(dish.priceValue) };
+  const effectiveSpice = spiceList.includes(spice) ? spice : (spiceList[0] || '');
+  const canOrder = Boolean(orderItem.name) && (!isGroup || variant) && (!spiceList.length || effectiveSpice);
+  const placeOrder = () => {
+    if (!canOrder) return;
+    onOrder({
+      ...orderItem,
+      qty: 1,
+      spicyLevel: spiceList.length ? effectiveSpice : undefined,
+    });
+  };
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div ref={panelRef} className="modal-panel dish-dialog" role="dialog" aria-modal="true" aria-label={dish.name} onClick={(e) => e.stopPropagation()}>
@@ -905,10 +935,17 @@ function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle 
           {spiceList && spiceList.length > 0 && (
             <div className="dish-dialog-spice">
               <h3>Spice level</h3>
-              <SpiceRadioGroup key={dish.id || dish.name} name={dish.name} levels={spiceList} onPick={breakChilli} />
+              <SpiceRadioGroup
+                key={`${dish.id || dish.name}-${(spiceList || []).join('-')}`}
+                name={dish.name}
+                levels={spiceList}
+                value={effectiveSpice}
+                onChange={setSpice}
+                onPick={breakChilli}
+              />
             </div>
           )}
-          <button type="button" className="dish-dialog-order" onClick={onOrder}>
+          <button type="button" className="dish-dialog-order" onClick={placeOrder} disabled={!canOrder}>
             <ShoppingBag size={16} /> Order now
           </button>
         </div>
@@ -971,6 +1008,7 @@ function App() {
   const [orderOpen, setOrderOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState(null);
+  const [orderPrefill, setOrderPrefill] = useState(null);
   const tabsRef = React.useRef(null);
   const [tabEdges, setTabEdges] = useState({ left: false, right: false });
   const updateTabEdges = () => {
@@ -1468,7 +1506,7 @@ function App() {
                       </span>
                     </div>
                     <p>{dish.desc || dish.description}</p>
-                    <CustomizableTag name={dish.name} />
+                    <CustomizableTag dish={dish} />
                   </div>
                 </article>
               ))}
@@ -1709,7 +1747,11 @@ function App() {
         initialProtein={selectedDish?.pick?.protein || ''}
         initialStyle={selectedDish?.pick?.style || ''}
         onClose={() => setSelectedDish(null)}
-        onOrder={() => { setSelectedDish(null); openOrder(); }}
+        onOrder={(line) => {
+          setSelectedDish(null);
+          setOrderPrefill(line);
+          openOrder();
+        }}
       />
       <OrderModal
         open={orderOpen}
@@ -1717,6 +1759,8 @@ function App() {
         onSuccess={showNotice}
         onError={showNotice}
         dishes={dishes}
+        prefill={orderPrefill}
+        onPrefillConsumed={() => setOrderPrefill(null)}
       />
       <ReserveModal
         open={reserveOpen}

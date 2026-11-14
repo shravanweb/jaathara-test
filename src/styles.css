@@ -1,4 +1,4 @@
-﻿/* Jaathara â€” light cream, kumkuma red and turmeric gold */
+/* Jaathara â€” light cream, kumkuma red and turmeric gold */
 
 :root {
   --kumkuma: #9d1024;
@@ -2752,7 +2752,7 @@ html { scroll-padding-top: 110px; }
 .dish-clickable:focus-visible{outline:2px solid var(--kumkuma);outline-offset:4px;border-radius:12px}
 .modal-panel.dish-dialog{position:relative;padding:0;width:min(520px,100%);overflow:auto}
 .dish-dialog-close{position:absolute;top:12px;right:12px;z-index:2;box-shadow:0 4px 14px rgba(0,0,0,.15)}
-.dish-dialog-media{width:100%;aspect-ratio:16/10;background:#f6efe4;overflow:hidden;border-radius:18px 18px 0 0}
+.dish-dialog-media{width:100%;aspect-ratio:16/7;max-height:200px;background:#f6efe4;overflow:hidden;border-radius:18px 18px 0 0}
 .dish-dialog-media img{width:100%;height:100%;object-fit:cover;display:block}
 .dish-dialog-media.is-placeholder{display:grid;place-items:center;aspect-ratio:16/7}
 .dish-dialog-body{padding:18px 22px 22px}
@@ -2983,3 +2983,6 @@ button.dgp-chip,button.dgp-cta,button.dgp-pricebtn{font-family:inherit;cursor:po
 .chat-dish-thumb{width:40px;height:40px;flex-shrink:0;border-radius:8px;object-fit:cover;background:#f3ebdf}
 .chat-dish-name{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
 .chat-veg{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:10px;font-weight:700;letter-spacing:.02em;line-height:1.4}
+
+.order-line-spice{display:block;font-size:12px;color:#9a3412;font-weight:600;letter-spacing:.04em}
+.dish-dialog-order:disabled{opacity:.45;cursor:not-allowed}

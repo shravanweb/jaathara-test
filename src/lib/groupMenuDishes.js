@@ -106,7 +106,8 @@ function addGroupedVariant(groups, out, d, cfg, protein, style) {
     out.push(g);
   }
   if (!g.image && d.image) g.image = d.image;
-  if (!g.spiceLevels.length) g.spiceLevels = parseSpiceText(d.spicyLevel);
+  const nextSpice = parseSpiceText(d.spicyLevel);
+  nextSpice.forEach((lv) => { if (!g.spiceLevels.includes(lv)) g.spiceLevels.push(lv); });
   g.variants.push({ protein, style, price: d.priceValue, veg: d.veg, image: d.image || '', item: d });
 }
 
