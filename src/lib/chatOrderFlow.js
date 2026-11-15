@@ -1,6 +1,6 @@
 /**
  * Chat-order state machine:
- * category → dish → (protein → style?) → spice → qty → more? → phone → name → address → confirm
+ * category → dish → (protein → style?) → spice → qty → more? → phone → name → order type (→ address if delivery) → confirm
  * Grouped dishes (Manchurian, Fried Rice, etc.) use the same grouping as the website menu.
  */
 
@@ -20,6 +20,7 @@ export const STEPS = {
   MORE: 'awaiting_anything_else',
   PHONE: 'awaiting_phone',
   NAME: 'awaiting_name',
+  ORDER_TYPE: 'awaiting_order_type',
   ADDRESS: 'awaiting_address',
   CONFIRM: 'awaiting_order_confirm',
   COMPLETE: 'complete',
@@ -34,7 +35,7 @@ export function createEmptySession() {
     pendingStyle: '',
     pendingQty: null,
     cart: [],
-    guest: { phone: '', name: '', address: '', notes: '' },
+    guest: { phone: '', name: '', address: '', notes: '', orderType: '' },
     menuConfig: null,
   };
 }
@@ -349,8 +350,38 @@ function isMenuIntent(text) {
   return /^(menu|show menu|view menu|what.?s on the menu|other dishes|add more)$/i.test(normalize(text));
 }
 
+const ORDER_TYPE_ACTIONS = [
+  { id: 'type:pickup', label: 'Pickup' },
+  { id: 'type:takeaway', label: 'Takeaway' },
+  { id: 'type:delivery', label: 'Delivery' },
+];
+
+const PICKUP_ADDRESS = 'Pickup at Sandy, Utah';
+
+function parseOrderType(text) {
+  const q = normalize(String(text || '').replace(/^type:/i, ''));
+  if (/pick ?up|collect/.test(q)) return 'Pickup';
+  if (/take ?away|to ?go|carry ?out/.test(q)) return 'Takeaway';
+  if (/deliver/.test(q)) return 'Delivery';
+  return null;
+}
+
+function confirmReply(session) {
+  const typeLine = session.guest.orderType === 'Delivery'
+    ? `Delivery to: ${session.guest.address}`
+    : `${session.guest.orderType} at ${PICKUP_ADDRESS.replace(/^Pickup at /, '')}`;
+  return {
+    session,
+    reply: `${formatCart(session.cart, session.menuConfig)}\n\n${session.guest.name} · ${session.guest.phone}\n${typeLine}\n\nPlace this order?`,
+    actions: [
+      { id: 'confirm:yes', label: 'Place order' },
+      { id: 'cancel', label: 'Cancel' },
+    ],
+  };
+}
+
 function isCheckoutLocked(step) {
-  return step === STEPS.PHONE || step === STEPS.NAME || step === STEPS.ADDRESS || step === STEPS.CONFIRM;
+  return step === STEPS.PHONE || step === STEPS.NAME || step === STEPS.ORDER_TYPE || step === STEPS.ADDRESS || step === STEPS.CONFIRM;
 }
 
 function cartTotal(cart) {
@@ -766,25 +797,34 @@ export function advanceChatOrder(sessionIn, userText, dishes, menuConfig) {
   if (session.step === STEPS.NAME) {
     if (text.length < 2) return { session, reply: 'Please enter your name.' };
     session.guest.name = text;
-    session.step = STEPS.ADDRESS;
+    session.step = STEPS.ORDER_TYPE;
     return {
       session,
-      reply: 'Delivery address, or type “pickup” for takeaway at our Sandy, Utah restaurant.',
+      reply: 'Pickup, takeaway or delivery?',
+      actions: ORDER_TYPE_ACTIONS,
     };
   }
 
-  if (session.step === STEPS.ADDRESS) {
-    if (text.length < 3) return { session, reply: 'Please enter an address or “pickup”.' };
-    session.guest.address = /pickup|takeaway|collect/i.test(text) ? 'Pickup at Sandy, Utah' : text;
+  if (session.step === STEPS.ORDER_TYPE) {
+    const orderType = parseOrderType(text);
+    if (!orderType) {
+      return { session, reply: 'Please choose Pickup, Takeaway or Delivery.', actions: ORDER_TYPE_ACTIONS };
+    }
+    session.guest.orderType = orderType;
+    if (orderType === 'Delivery') {
+      session.step = STEPS.ADDRESS;
+      return { session, reply: 'What’s the delivery address?' };
+    }
+    session.guest.address = PICKUP_ADDRESS;
     session.step = STEPS.CONFIRM;
-    return {
-      session,
-      reply: `${formatCart(session.cart, session.menuConfig)}\n\n${session.guest.name} · ${session.guest.phone}\n${session.guest.address}\n\nPlace this order?`,
-      actions: [
-        { id: 'confirm:yes', label: 'Place order' },
-        { id: 'cancel', label: 'Cancel' },
-      ],
-    };
+    return confirmReply(session);
+  }
+
+  if (session.step === STEPS.ADDRESS) {
+    if (text.length < 5) return { session, reply: 'Please enter the full delivery address.' };
+    session.guest.address = text;
+    session.step = STEPS.CONFIRM;
+    return confirmReply(session);
   }
 
   if (session.step === STEPS.CONFIRM) {
@@ -822,6 +862,7 @@ export function buildOrderPayload(session) {
     customerName: session.guest.name,
     customerPhone: session.guest.phone,
     customerAddress: session.guest.address,
+    orderType: session.guest.orderType || 'Pickup',
     notes: session.guest.notes || 'Ordered via website chat',
     lineItems: session.cart.map((l) => ({
       menuItemId: l.id || undefined,

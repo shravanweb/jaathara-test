@@ -91,8 +91,8 @@ export default function OrderChatWidget({ dishes = [], menuConfig = null, onOrde
   };
   const listRef = useRef(null);
 
-  const pushAssistant = (text, actions = [], listStyle) => {
-    setMessages((prev) => [...prev, { role: 'assistant', text, actions, listStyle }]);
+  const pushAssistant = (text, actions = [], listStyle, token) => {
+    setMessages((prev) => [...prev, { role: 'assistant', text, actions, listStyle, token }]);
     if (voiceOutRef.current) speak(text);
   };
 
@@ -108,7 +108,7 @@ export default function OrderChatWidget({ dishes = [], menuConfig = null, onOrde
       let mapped = text;
       if (text === 'order' || /^start order$/i.test(text)) mapped = 'order';
       else if (text === 'menu' || /^show menu$/i.test(text)) mapped = 'menu';
-      else if (/^(dish|cat|protein|style|qty|spice):/i.test(text)) mapped = text;
+      else if (/^(dish|cat|protein|style|qty|spice|type):/i.test(text)) mapped = text;
       else if (text === 'more:no' || /^checkout$/i.test(text)) mapped = 'checkout';
       else if (text === 'confirm:yes' || /^place order$/i.test(text)) mapped = 'place order';
       else if (text === 'cancel' || /^cancel$/i.test(text)) mapped = 'cancel';
@@ -125,13 +125,17 @@ export default function OrderChatWidget({ dishes = [], menuConfig = null, onOrde
         const done = createEmptySession();
         done.step = STEPS.COMPLETE;
         setSession(done);
-        const confirm = code
-          ? `Order placed · ${code}. You’ll see it in Restaurant Admin → Orders.`
-          : 'Order placed. Check Restaurant Admin → Orders.';
+        const token = order.tokenLabel || '';
+        const kind = order.orderType || payload.orderType || '';
+        const confirm = [
+          code ? `Order placed · ${code}.` : 'Order placed.',
+          token ? `Your ${kind ? kind.toLowerCase() : 'pickup'} token is ${token}. Show it at the counter when you collect your order.` : '',
+          !token && kind === 'Delivery' ? 'We’ll call you if we need anything for the delivery.' : '',
+        ].filter(Boolean).join(' ');
         pushAssistant(confirm, [
           { id: 'order', label: 'Order again' },
           { id: 'menu', label: 'Show menu' },
-        ]);
+        ], undefined, token || undefined);
         onOrderPlaced?.(confirm);
       } else {
         pushAssistant(result.reply, result.actions || [], result.listStyle);
@@ -197,6 +201,12 @@ export default function OrderChatWidget({ dishes = [], menuConfig = null, onOrde
           <div className="chat-messages" ref={listRef}>
             {messages.map((msg, i) => (
               <div key={`${msg.role}-${i}`} className={`chat-bubble ${msg.role}`}>
+                {msg.token ? (
+                  <div className="chat-token" aria-label={`Token ${msg.token}`}>
+                    <small>Your token</small>
+                    <strong>{msg.token}</strong>
+                  </div>
+                ) : null}
                 <p>{msg.text}</p>
                 {msg.actions?.length > 0 && (
                   <div className={msg.listStyle === 'dishes' ? 'chat-dish-list' : 'chat-actions'}>

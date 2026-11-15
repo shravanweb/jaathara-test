@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { LoaderCircle, Minus, Plus, Search, ShoppingBag, Trash2, X } from 'lucide-react';
+import { Bike, CheckCircle2, LoaderCircle, Minus, Plus, Search, ShoppingBag, Store, Trash2, X } from 'lucide-react';
 import { createOrder } from '../lib/restaurantApi';
 import { parseSpiceText } from '../lib/groupMenuDishes';
 
@@ -7,6 +7,14 @@ function lineKey(item) {
   const spice = item.spicyLevel && item.spicyLevel !== '—' ? item.spicyLevel : '';
   return `${item.id || item.name}::${spice}`;
 }
+
+const ORDER_TYPES = [
+  { id: 'Pickup', label: 'Pickup', hint: 'Collect at Sandy, Utah', Icon: Store },
+  { id: 'Takeaway', label: 'Takeaway', hint: 'Packed to go', Icon: ShoppingBag },
+  { id: 'Delivery', label: 'Delivery', hint: 'To your address', Icon: Bike },
+];
+
+const PICKUP_ADDRESS = 'Pickup at Sandy, Utah';
 
 function defaultSpice(dish) {
   const levels = parseSpiceText(dish?.spicyLevel);
@@ -17,6 +25,8 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+  const [orderType, setOrderType] = useState('Pickup');
+  const [placed, setPlaced] = useState(null);
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -84,6 +94,12 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
 
   if (!open) return null;
 
+  const isDelivery = orderType === 'Delivery';
+  const closeModal = () => {
+    setPlaced(null);
+    onClose?.();
+  };
+
   const setQty = (key, next) => {
     const qty = Math.max(0, Math.min(20, next));
     setLines((prev) => {
@@ -98,6 +114,10 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
       setLocalError('Add at least one dish to the order.');
       return;
     }
+    if (isDelivery && customerAddress.trim().length < 5) {
+      setLocalError('Enter the delivery address.');
+      return;
+    }
     setSubmitting(true);
     setLocalError('');
     try {
@@ -105,7 +125,8 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
         externalId: `jaathara-web-${Date.now()}`,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        customerAddress: customerAddress.trim(),
+        customerAddress: isDelivery ? customerAddress.trim() : PICKUP_ADDRESS,
+        orderType,
         notes: notes.trim(),
         lineItems: lineItems.map((l) => ({
           menuItemId: l.id || undefined,
@@ -116,13 +137,19 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
           spicyLevel: l.spicyLevel || undefined,
         })),
       });
+      const token = result.tokenLabel || '';
       onSuccess?.(
-        result.code
-          ? `Order placed · ${result.code}`
-          : 'Order placed — check Restaurant Admin → Orders'
+        [result.code ? `Order placed · ${result.code}` : 'Order placed', token ? `Token ${token}` : '']
+          .filter(Boolean)
+          .join(' · ')
       );
+      setPlaced({
+        code: result.code || '',
+        token,
+        orderType: result.orderType || orderType,
+        total: Number(result.total) || total,
+      });
       setLines([]);
-      onClose?.();
     } catch (err) {
       const message = err.message || 'Order failed';
       setLocalError(message);
@@ -133,7 +160,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
   };
 
   return (
-    <div className="modal-backdrop" role="presentation" onClick={onClose}>
+    <div className="modal-backdrop" role="presentation" onClick={closeModal}>
       <div
         className="modal-panel modal-panel-wide"
         role="dialog"
@@ -143,14 +170,39 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
       >
         <header className="modal-head">
           <div>
-            <span className="eyebrow">Takeaway</span>
-            <h2 id="order-title">Order Online</h2>
+            <span className="eyebrow">{placed ? 'Thank you' : orderType}</span>
+            <h2 id="order-title">{placed ? 'Order Confirmed' : 'Order Online'}</h2>
           </div>
-          <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
+          <button type="button" className="modal-close" onClick={closeModal} aria-label="Close">
             <X size={18} />
           </button>
         </header>
 
+        {placed ? (
+          <div className="order-confirm">
+            <CheckCircle2 size={34} className="order-confirm-icon" aria-hidden="true" />
+            {placed.token ? (
+              <div className="order-token">
+                <small>Your {placed.orderType.toLowerCase()} token</small>
+                <strong>{placed.token}</strong>
+              </div>
+            ) : null}
+            <p className="order-confirm-code">
+              Order <strong>{placed.code || 'received'}</strong>
+              {placed.total ? <> · $ {placed.total.toFixed(2)}</> : null}
+            </p>
+            <p className="modal-hint">
+              {placed.token
+                ? 'Show this token at the counter when you collect your order at Sandy, Utah.'
+                : placed.orderType === 'Delivery'
+                  ? 'We’ll call you if we need anything for the delivery.'
+                  : 'We’ll have it ready for you.'}
+            </p>
+            <button type="button" className="btn btn-red modal-submit" onClick={closeModal}>
+              Done
+            </button>
+          </div>
+        ) : (
         <form className="modal-form" onSubmit={submit}>
           <div className="order-picker">
             <span className="otp-label">Add dishes</span>
@@ -235,22 +287,44 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
               autoComplete="tel"
             />
           </label>
-          <label>
-            <span>Delivery / pickup notes</span>
-            <input
-              value={customerAddress}
-              onChange={(e) => setCustomerAddress(e.target.value)}
-              placeholder="Address or “pickup at Sandy, Utah”"
-              autoComplete="street-address"
-            />
-          </label>
+          <div className="order-type">
+            <span className="otp-label">How would you like it?</span>
+            <div className="order-type-options" role="radiogroup" aria-label="Order type">
+              {ORDER_TYPES.map(({ id, label, hint, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={orderType === id}
+                  className={`order-type-option${orderType === id ? ' is-active' : ''}`}
+                  onClick={() => setOrderType(id)}
+                >
+                  <Icon size={16} aria-hidden="true" />
+                  <strong>{label}</strong>
+                  <small>{hint}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+          {isDelivery ? (
+            <label>
+              <span>Delivery address</span>
+              <input
+                required
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                placeholder="Street, city, ZIP"
+                autoComplete="street-address"
+              />
+            </label>
+          ) : null}
           <label>
             <span>Order notes (optional)</span>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Allergies, delivery instructions…"
+              placeholder={isDelivery ? 'Allergies, delivery instructions…' : 'Allergies, pickup time…'}
             />
           </label>
 
@@ -269,6 +343,7 @@ export default function OrderModal({ open, onClose, onSuccess, onError, dishes, 
             )}
           </button>
         </form>
+        )}
       </div>
     </div>
   );

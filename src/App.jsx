@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowRight, CalendarDays, ChefHat, Clock3, Instagram, Mail,
   MapPin, Menu as MenuIcon, Phone, ShoppingBag, Utensils, X, Leaf,
-  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music, Search, ChevronLeft, ChevronRight, Tag
+  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, HeartHandshake, Sparkles, Search, ChevronLeft, ChevronRight, Tag
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun1.jpg';
@@ -44,7 +44,6 @@ function resolveMenuFields(menuConfig) {
 }
 import clipBalloon from './assets/Cliparts/balloonseller-animated.svg';
 import clipDappu from './assets/Cliparts/dappumusicians.webp';
-import clipWheel from './assets/Cliparts/giantwheel-animated.svg';
 import clipKolatam from './assets/Cliparts/kolatam-dancers.webp';
 import clipMerry from './assets/Cliparts/03-merry-go-round.png';
 import clipSugarcane from './assets/Cliparts/12-sugarcane-cart.png';
@@ -53,9 +52,6 @@ import clipFlowerStall from './assets/Cliparts/07-flower-stall.png';
 import KolamDraw from './components/KolamDraw';
 import kolamFooterA from './assets/Kolam/svg_white/13_chakra_mandala.svg';
 import kolamFooterB from './assets/Kolam/svg_white/16_radial_petal.svg';
-import eventFestival from './assets/event-festival.webp';
-import eventTandoor from './assets/event-tandoor.webp';
-import eventPrivate from './assets/event-private.webp';
 
 const food = {
   biryani: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=1400&q=80',
@@ -111,13 +107,6 @@ const cateringSteps = [
   { title: 'Pick your menu', text: 'Choose from our dishes or let us build a custom feast.' },
   { title: 'We cook & serve', text: 'Fresh food, trays or full service, set up on time.' }
 ];
-
-const events = [
-  { icon: PartyPopper, tag: 'Festivals', title: 'Festival Nights', text: 'Special menus and celebrations for Diwali, Sankranti, Ugadi, Bathukamma and Dasara.', image: eventFestival },
-  { icon: Flame, tag: 'Live kitchen', title: 'Live Tandoor Evenings', text: 'Kebabs, naan and tikkas fresh off the coals, cooked right in front of you.', image: eventTandoor },
-  { icon: Music, tag: 'Private hire', title: 'Private Dining & Parties', text: 'Book our hall for birthdays, anniversaries, team dinners and family functions.', image: eventPrivate }
-];
-
 
 const feastItems = [
   'Hyderabadi dum biryani',
@@ -1138,7 +1127,6 @@ function App() {
     { label: 'About Us', id: 'about' },
     { label: 'Gallery', id: 'gallery' },
     { label: 'Catering', id: 'catering' },
-    { label: 'Events', id: 'events' },
     { label: 'Contact', id: 'contact' }
   ];
 
@@ -1188,7 +1176,7 @@ function App() {
 
   useEffect(() => {
     const map = { feast: 'menu', specials: 'menu', specialties: 'menu', reserve: 'contact' };
-    const ids = ['home', 'specialties', 'celebrate', 'gallery', 'about', 'feast', 'menu', 'specials', 'catering', 'events', 'reserve', 'contact'];
+    const ids = ['home', 'specialties', 'celebrate', 'gallery', 'about', 'feast', 'menu', 'specials', 'catering', 'reserve', 'contact'];
     const onScroll = () => {
       const y = window.scrollY + 130;
       let current = 'home';
@@ -1266,8 +1254,6 @@ function App() {
             <button type="button" onClick={() => goTo('reserve')}>Takeaway</button>
             <span className="pipe">|</span>
             <button type="button" onClick={() => goTo('catering')}>Catering</button>
-            <span className="pipe">|</span>
-            <button type="button" onClick={() => goTo('catering')}>Events</button>
           </div>
           <div className="top-meta">
             <span><MapPin size={12} /> Sandy, Utah</span>
@@ -1455,23 +1441,6 @@ function App() {
           </div>
         </section>
 
-        <section className="gallery section-pad" id="gallery">
-          <img src={clipMerry} alt="" aria-hidden="true" className="gallery-clip gallery-clip-tl" />
-          <img src={clipSugarcane} alt="" aria-hidden="true" className="gallery-clip gallery-clip-br" />
-          <div className="container">
-            <SectionHeading eyebrow="Moments from the jathara" title="Our Gallery" />
-            <div className="gallery-mosaic" data-reveal>
-              <figure className="g-a"><img src={food.biryani} alt="Hyderabadi dum biryani" loading="lazy" /><figcaption><small>Chef's Pride</small>The Royal Biryani Handi</figcaption></figure>
-              <figure className="g-b"><img src={food.diningServe} alt="Service in the dining room" loading="lazy" /><figcaption><small>Interiors</small>Heritage Corner</figcaption></figure>
-              <figure className="g-c"><img src={food.samosa} alt="Golden samosas with chutney" loading="lazy" /><figcaption><small>Starters</small>Festival Snacks</figcaption></figure>
-              <figure className="g-d"><img src={food.diningWarm} alt="Warm evening dining room" loading="lazy" /><figcaption><small>Ambience</small>An Evening at the Feast</figcaption></figure>
-              <figure className="g-e"><img src={food.tandoori} alt="Tandoori kebabs on the grill" loading="lazy" /><figcaption><small>Tandoor</small>From the Coals</figcaption></figure>
-              <figure className="g-f"><img src={food.diningRoom} alt="Restaurant dining room" loading="lazy" /><figcaption><small>Dine-in</small>A Seat at Jaathara</figcaption></figure>
-              <figure className="g-g"><img src={food.thali} alt="Festival thali with roti and curries" loading="lazy" /><figcaption><small>Thali</small>The Festival Feast</figcaption></figure>
-              <figure className="g-h"><img src={food.restaurant} alt="Jaathara dining room" loading="lazy" /><figcaption><small>Our Space</small>The Hall</figcaption></figure>
-            </div>
-          </div>
-        </section>
         <section className="about section-pad" id="about">
           <Charminar className="ornament charminar-about" />
           <div className="container about-grid">
@@ -1495,6 +1464,24 @@ function App() {
               <button className="btn btn-red" onClick={() => goTo('contact')}>
                 Know More <ArrowRight size={16} />
               </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="gallery section-pad" id="gallery">
+          <img src={clipMerry} alt="" aria-hidden="true" className="gallery-clip gallery-clip-tl" />
+          <img src={clipSugarcane} alt="" aria-hidden="true" className="gallery-clip gallery-clip-br" />
+          <div className="container">
+            <SectionHeading eyebrow="Moments from the jathara" title="Our Gallery" />
+            <div className="gallery-mosaic" data-reveal>
+              <figure className="g-a"><img src={food.biryani} alt="Hyderabadi dum biryani" loading="lazy" /><figcaption><small>Chef's Pride</small>The Royal Biryani Handi</figcaption></figure>
+              <figure className="g-b"><img src={food.diningServe} alt="Service in the dining room" loading="lazy" /><figcaption><small>Interiors</small>Heritage Corner</figcaption></figure>
+              <figure className="g-c"><img src={food.samosa} alt="Golden samosas with chutney" loading="lazy" /><figcaption><small>Starters</small>Festival Snacks</figcaption></figure>
+              <figure className="g-d"><img src={food.diningWarm} alt="Warm evening dining room" loading="lazy" /><figcaption><small>Ambience</small>An Evening at the Feast</figcaption></figure>
+              <figure className="g-e"><img src={food.tandoori} alt="Tandoori kebabs on the grill" loading="lazy" /><figcaption><small>Tandoor</small>From the Coals</figcaption></figure>
+              <figure className="g-f"><img src={food.diningRoom} alt="Restaurant dining room" loading="lazy" /><figcaption><small>Dine-in</small>A Seat at Jaathara</figcaption></figure>
+              <figure className="g-g"><img src={food.thali} alt="Festival thali with roti and curries" loading="lazy" /><figcaption><small>Thali</small>The Festival Feast</figcaption></figure>
+              <figure className="g-h"><img src={food.restaurant} alt="Jaathara dining room" loading="lazy" /><figcaption><small>Our Space</small>The Hall</figcaption></figure>
             </div>
           </div>
         </section>
@@ -1680,28 +1667,6 @@ function App() {
           </div>
         </section>
 
-        <section className="events-section section-pad" id="events">
-          <img className="clip clip-tr" src={clipWheel} alt="" aria-hidden="true" loading="lazy" />
-          <div className="container">
-            <SectionHeading eyebrow="Celebrate with us" title="Events at Jaathara" />
-            <p className="section-lead-center" data-reveal>Festival nights, live kitchens and private parties, all with the colour of a village jathara.</p>
-            <div className="events-grid">
-              {events.map(({ icon: Icon, tag, title, text, image }) => (
-                <article className="event-card" key={title} data-reveal>
-                  <div className="event-image">
-                    <img src={image} alt={title} loading="lazy" />
-                    <span className="event-tag"><Icon size={14} /> {tag}</span>
-                  </div>
-                  <div className="event-body">
-                    <h4>{title}</h4>
-                    <p>{text}</p>
-                    <a className="event-link" href="#reserve">Enquire now <ArrowRight size={14} /></a>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
         <section className="testimonials section-pad">
           <img className="clip clip-br" src={clipKolatam} alt="" aria-hidden="true" loading="lazy" />
           <div className="container testimonial-wrap">
@@ -1814,15 +1779,6 @@ function App() {
               <a href="#catering">Birthdays & Parties</a>
               <a href="#catering">Community Gatherings</a>
               <a href="#catering">Party Trays</a>
-            </nav>
-          </div>
-          <div className="footer-col">
-            <h3>Events</h3>
-            <nav className="footer-links">
-              <a href="#events">Festival Nights</a>
-              <a href="#events">Live Tandoor Evenings</a>
-              <a href="#events">Private Dining</a>
-              <a href="#events">Hall Booking</a>
             </nav>
           </div>
           <div className="footer-col">
