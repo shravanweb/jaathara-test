@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { LoaderCircle, MessageCircle, Mic, MicOff, Send, Volume2, VolumeX, X } from 'lucide-react';
+import { LoaderCircle, MessageCircle, Mic, MicOff, Send, Tag, Volume2, VolumeX, X } from 'lucide-react';
 import {
   advanceChatOrder,
   buildOrderPayload,
@@ -7,6 +7,7 @@ import {
   STEPS,
 } from '../lib/chatOrderFlow';
 import { createOrder } from '../lib/restaurantApi';
+import { earnPointsLabel } from '../lib/loyalty';
 
 function speak(text) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -214,7 +215,15 @@ export default function OrderChatWidget({ dishes = [], menuConfig = null, onOrde
                           {action.veg === true ? <span className="chat-veg">Veg</span> : null}
                         </span>
                         {action.price != null && action.price !== '' ? (
-                          <span className="chat-dish-price">${action.price}</span>
+                          <span className="chat-dish-price">
+                            ${action.price}
+                            {earnPointsLabel(action.price, menuConfig) ? (
+                              <span className="chat-dish-earn">
+                                <Tag size={12} strokeWidth={2} aria-hidden="true" />
+                                {earnPointsLabel(action.price, menuConfig)}
+                              </span>
+                            ) : null}
+                          </span>
                         ) : null}
                       </button>
                     ))}

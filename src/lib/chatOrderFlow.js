@@ -7,6 +7,7 @@
 import { displayCategoryName, sortCategories } from './categoryOrder.js';
 import { groupMenuDishes, parseSpiceText, normStyle } from './groupMenuDishes.js';
 import { selectOptionLabel } from './optionLabel.js';
+import { youWillEarnLabel } from './loyalty';
 
 export const STEPS = {
   IDLE: 'idle',
@@ -356,13 +357,15 @@ function cartTotal(cart) {
   return cart.reduce((sum, line) => sum + Number(line.price) * Number(line.qty), 0);
 }
 
-function formatCart(cart) {
+function formatCart(cart, menuConfig) {
   if (!cart.length) return 'Your cart is empty.';
   const lines = cart.map(
     (l) =>
       `• ${l.name}${l.spicyLevel && l.spicyLevel !== '—' ? ` (${l.spicyLevel})` : ''} × ${l.qty} — $ ${(Number(l.price) * Number(l.qty)).toFixed(2)}`,
   );
   lines.push(`Total: $ ${cartTotal(cart).toFixed(2)}`);
+  const earn = youWillEarnLabel(cartTotal(cart), menuConfig);
+  if (earn) lines.push(earn);
   return lines.join('\n');
 }
 
@@ -677,7 +680,7 @@ export function advanceChatOrder(sessionIn, userText, dishes, menuConfig) {
     session.step = STEPS.MORE;
     return {
       session,
-      reply: `${formatCart(session.cart)}\n\nAnything else?`,
+      reply: `${formatCart(session.cart, session.menuConfig)}\n\nAnything else?`,
       actions: [
         { id: 'more:no', label: 'Checkout' },
         { id: 'menu', label: 'Add more' },
@@ -703,7 +706,7 @@ export function advanceChatOrder(sessionIn, userText, dishes, menuConfig) {
       session.step = STEPS.MORE;
       return {
         session,
-        reply: `${formatCart(session.cart)}\n\nAnything else?`,
+        reply: `${formatCart(session.cart, session.menuConfig)}\n\nAnything else?`,
         actions: [
           { id: 'more:no', label: 'Checkout' },
           { id: 'menu', label: 'Add more' },
@@ -723,7 +726,7 @@ export function advanceChatOrder(sessionIn, userText, dishes, menuConfig) {
     session.step = STEPS.MORE;
     return {
       session,
-      reply: `${formatCart(session.cart)}\n\nAnything else?`,
+      reply: `${formatCart(session.cart, session.menuConfig)}\n\nAnything else?`,
       actions: [
         { id: 'more:no', label: 'Checkout' },
         { id: 'menu', label: 'Add more' },
@@ -736,7 +739,7 @@ export function advanceChatOrder(sessionIn, userText, dishes, menuConfig) {
       session.step = STEPS.PHONE;
       return {
         session,
-        reply: `${formatCart(session.cart)}\n\nWhat’s your phone number?`,
+        reply: `${formatCart(session.cart, session.menuConfig)}\n\nWhat’s your phone number?`,
       };
     }
     const picked = handlePick(false);
@@ -776,7 +779,7 @@ export function advanceChatOrder(sessionIn, userText, dishes, menuConfig) {
     session.step = STEPS.CONFIRM;
     return {
       session,
-      reply: `${formatCart(session.cart)}\n\n${session.guest.name} · ${session.guest.phone}\n${session.guest.address}\n\nPlace this order?`,
+      reply: `${formatCart(session.cart, session.menuConfig)}\n\n${session.guest.name} · ${session.guest.phone}\n${session.guest.address}\n\nPlace this order?`,
       actions: [
         { id: 'confirm:yes', label: 'Place order' },
         { id: 'cancel', label: 'Cancel' },

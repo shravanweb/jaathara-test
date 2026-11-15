@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowRight, CalendarDays, ChefHat, Clock3, Instagram, Mail,
   MapPin, Menu as MenuIcon, Phone, ShoppingBag, Utensils, X, Leaf,
-  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music, Search, ChevronLeft, ChevronRight
+  Award, Users, Facebook, Youtube, Truck, Home, ConciergeBell, UtensilsCrossed, Building2, Cake, PartyPopper, Flame, HeartHandshake, Sparkles, Music, Search, ChevronLeft, ChevronRight, Tag
 } from 'lucide-react';
 import emblem from './assets/jaathara-emblem.png';
 import gulabJamun from './assets/gulab-jamun1.jpg';
@@ -15,24 +15,31 @@ import { useRestaurantMenu } from './hooks/useRestaurantMenu';
 import { displayCategoryName } from './lib/categoryOrder';
 import { groupMenuDishes, parseSpiceText } from './lib/groupMenuDishes';
 import { selectOptionLabel } from './lib/optionLabel';
+import { pointsForPrice } from './lib/loyalty';
 
 const MenuFieldsContext = React.createContext({
   showSpice: true,
   showVegType: true,
   variants: { label: 'Choice of protein' },
+  loyaltyEnabled: false,
+  pointsPerDollar: 10,
 });
 function useMenuFields() {
   return React.useContext(MenuFieldsContext);
 }
 function resolveMenuFields(menuConfig) {
   const label = menuConfig?.variants?.label || 'Choice of protein';
+  const loyaltyEnabled = menuConfig?.loyaltyEnabled === true;
+  const pointsPerDollar = Number(menuConfig?.pointsPerDollar) > 0 ? Number(menuConfig.pointsPerDollar) : 10;
   if (!menuConfig) {
-    return { showSpice: true, showVegType: true, variants: { label } };
+    return { showSpice: true, showVegType: true, variants: { label }, loyaltyEnabled: false, pointsPerDollar };
   }
   return {
     showSpice: menuConfig.showSpice !== false,
     showVegType: menuConfig.showVegType !== false,
     variants: { label },
+    loyaltyEnabled,
+    pointsPerDollar,
   };
 }
 import clipBalloon from './assets/Cliparts/balloonseller-animated.svg';
@@ -637,6 +644,12 @@ function DishGroupCard({ group, onOpen }) {
     setStyle(next);
   };
   const menuFields = useMenuFields();
+  const selectedMatch = hasStyles && style
+    ? group.variants.find((v) => v.protein === protein && v.style === style)
+    : null;
+  const selectedPrice = selectedMatch
+    ? selectedMatch.price
+    : (hasStyles ? group.fromPrice(style) : (group.priceForProtein ? group.priceForProtein(protein) : group.fromPrice()));
   return (
     <article
       className="dish-group pro"
@@ -670,6 +683,7 @@ function DishGroupCard({ group, onOpen }) {
           <span className="dgp-start"><small>Starting at</small>${(hasStyles ? group.fromPrice(style) : group.fromPrice()).toFixed(2)}</span>
         </div>
         <p className="dgp-desc">{group.desc}</p>
+        <DishMetaRow dish={group} price={selectedPrice} menuConfig={menuFields} />
         {hasStyles ? (
           <div className="dgp-styles">
             <span className="dgp-label">Style</span>
@@ -775,6 +789,36 @@ function CustomizableTag({ dish, name }) {
   const levels = dishSpiceLevels(dish || { name, spicyLevel: '' });
   if (!showSpice || !levels.length) return null;
   return <span className="custom-tag">Customizable</span>;
+}
+function dishHasCustomSpice(dish, name) {
+  if (!dish && !name) return false;
+  if (dish?.isGroup) return Array.isArray(dish.spiceLevels) && dish.spiceLevels.length > 0;
+  return dishSpiceLevels(dish || { name, spicyLevel: dish?.spicyLevel || '' }).length > 0;
+}
+function EarnPointsMark({ price, menuConfig }) {
+  const pts = pointsForPrice(price, menuConfig);
+  if (pts == null) return null;
+  return (
+    <span className="earn-tag">
+      <Tag size={12} strokeWidth={2} aria-hidden="true" />
+      {`Earn ${pts} Points`}
+    </span>
+  );
+}
+function DishMetaRow({ dish, name, price, menuConfig }) {
+  const { showSpice } = useMenuFields();
+  const customizable = showSpice && dishHasCustomSpice(dish, name);
+  const earn = <EarnPointsMark price={price} menuConfig={menuConfig} />;
+  if (!customizable && pointsForPrice(price, menuConfig) == null) return null;
+  return (
+    <div className="dish-meta">
+      {customizable ? <span className="custom-tag">Customizable</span> : null}
+      {customizable && pointsForPrice(price, menuConfig) != null ? (
+        <span className="dish-meta-dot" aria-hidden="true">·</span>
+      ) : null}
+      {earn}
+    </div>
+  );
 }
 function SpiceLevels({ dish, name, levels: given }) {
   const { showSpice } = useMenuFields();
@@ -957,6 +1001,7 @@ function DishDialog({ dish, onClose, onOrder, initialProtein = '', initialStyle 
             <p className="dish-dialog-price">{priceText}</p>
           </div>
           {(dish.desc || dish.description) && <p className="dish-dialog-desc">{dish.desc || dish.description}</p>}
+          <DishMetaRow dish={dish} price={orderItem.priceValue} menuConfig={menuFields} />
           {isGroup && dish.styles.length > 0 && (
             <OptionRadioGroup
               label="Style"
@@ -1557,7 +1602,7 @@ function App() {
                       </span>
                     </div>
                     <p>{dish.desc || dish.description}</p>
-                    <CustomizableTag dish={dish} />
+                    <DishMetaRow dish={dish} price={dish.priceValue} menuConfig={menuFields} />
                   </div>
                 </article>
               ))}
@@ -1583,9 +1628,12 @@ function App() {
                     <DietMark veg={item.veg} />
                   </div>
                   <h3>{item.name}</h3>
-                  <span className="dish-price special-price">
-                    <span className="price-value">$ {item.priceValue}</span>
-                  </span>
+                  <div className="special-card__pricing">
+                    <span className="dish-price special-price">
+                      <span className="price-value">$ {item.priceValue}</span>
+                    </span>
+                    <EarnPointsMark price={item.priceValue} menuConfig={menuFields} />
+                  </div>
                 </article>
               ))}
             </div></div>

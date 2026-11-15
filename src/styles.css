@@ -1096,6 +1096,8 @@ html.is-loading .hero-photo { opacity: 0; }
   gap: 24px;
 }
 .special-card {
+  display: flex;
+  flex-direction: column;
   text-align: center;
   background: #fff;
   border-radius: 18px;
@@ -1115,7 +1117,26 @@ html.is-loading .hero-photo { opacity: 0; }
 .special-image .diet { position: absolute; top: 12px; right: 12px; }
 .special-card h3 { font: 500 26px/1.2 var(--display); margin: 16px 0 6px; color: var(--kumkuma); }
 .special-card p { font-size: 14px; color: var(--ink-soft); line-height: 1.55; margin: 0; }
-.special-price { align-items: center; margin: 12px auto 0; }
+.special-card__pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.special-card__pricing .special-price,
+.special-card__pricing .dish-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  width: 100%;
+}
+.special-card__pricing .earn-tag { margin-top: 0; justify-content: center; }
+
 
 /* ---------- Testimonials ---------- */
 .testimonials {
@@ -2221,6 +2242,7 @@ html.is-loading .hero-photo { opacity: 0; }
 }
 .special-cards.special-track {
   display: flex !important;
+  align-items: stretch;
   grid-template-columns: none !important;
   gap: 18px;
   width: max-content;
@@ -2230,6 +2252,8 @@ html.is-loading .hero-photo { opacity: 0; }
 }
 .special-marquee:hover .special-track { animation-play-state: paused; }
 .special-track .special-card {
+  display: flex;
+  flex-direction: column;
   flex: 0 0 214px;
   width: 214px;
   padding: 10px 10px 16px;
@@ -2239,7 +2263,7 @@ html.is-loading .hero-photo { opacity: 0; }
 .special-track .special-image { height: 150px; border-radius: 90px 90px 12px 12px; }
 .special-track .special-card h3 { font: 600 16px/1.25 'Poppins', var(--sans); margin: 12px 0 4px; }
 .special-track .special-card p { font-size: 12.5px; line-height: 1.45; min-height: 36px; }
-.special-track .special-price { margin-top: 8px; }
+.special-track .special-card__pricing { padding-top: 10px; gap: 8px; }
 @keyframes specials-slide { to { transform: translateX(calc(-50% - 9px)); } }
 @media (max-width: 760px) {
   .special-track .special-card { flex-basis: 180px; width: 180px; }
@@ -2994,3 +3018,43 @@ button.dgp-chip,button.dgp-cta,button.dgp-pricebtn{font-family:inherit;cursor:po
 
 .order-line-spice{display:block;font-size:12px;color:#9a3412;font-weight:600;letter-spacing:.04em}
 .dish-dialog-order:disabled{opacity:.45;cursor:not-allowed}
+
+/* Loyalty earn-points: green pill, distinct from the gold Customizable tag */
+.dish-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.dish-meta .custom-tag { margin-top: 0; }
+.dish-meta-dot {
+  color: #9a877d;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+.earn-tag,
+.chat-dish-earn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #e8f5ee;
+  border: 1px solid rgba(31, 122, 77, 0.28);
+  color: #1f7a4d;
+  font: 600 11px/1.2 'Poppins', var(--sans);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.earn-tag svg,
+.chat-dish-earn svg {
+  flex: none;
+  color: #1f7a4d;
+  stroke-width: 2;
+}
+.dgp-body > .dish-meta { margin-top: 10px; }
+.dish-dialog-body > .dish-meta { margin-top: 10px; }
+.chat-dish-earn { margin-top: 4px; }
